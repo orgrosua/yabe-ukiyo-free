@@ -1,0 +1,14 @@
+{
+  "entrypoints": {
+    "admin": {
+      "js": [
+        "/runtime.435c2aee.js",
+        "/298.72175e91.js",
+        "/admin.2acbf073.js"
+      ],
+      "css": [
+        "/admin.1d7ef3bb.css"
+      ]
+    }
+  }
+}

@@ -1,0 +1,63 @@
+=== Yabe Ukiyo ===
+Contributors: suabahasa, rosua
+Donate link: https://ko-fi.com/Q5Q75XSF7
+Tags: bricks builder, template library, remote templates
+Requires at least: 6.0
+Tested up to: 6.3
+Stable tag: 1.0.0
+Requires PHP: 7.4
+License: GPLv3
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
+
+Bricks remote templates manager.
+
+== Description ==
+
+### Yabe Ukiyo: the #1 Bricks remote templates manager with e-commerce integration.
+
+Yabe Ukiyo is an Bricks remote templates manager plugin for designers to reuse their template library in other projects.
+Its e-commerce integration allows you to sell your template library with easy.
+
+### FEATURES
+
+Yabe Ukiyo is packed full of features designed to streamline your workflow. Some of our favorites are:
+
+* **License system**: The complete license key generation, activation, and checking system.
+* **Remotes manager**: Connect to multiple remote templates sources.
+* **Cross compatibility**: It works with the built-in Bricks template library system. 
+* **Easy to use**: Connect and manage the remote templates with a simple, intuitive interface.
+* **Lightweight and blazingly fast**: The license system is built on Bricks' built-in system, WordPress REST API, and a modern JavaScript framework for an instant, responsive user experience. It has a small footprint and won't slow down your site.
+* **E-commerce integration**: Sell your template library with ease. Yabe Ukiyo is integrated with the most popular e-commerce plugins.
+
+### SEAMLESS INTEGRATION
+
+It's easy to sell your template library thanks to the seamless integration with the most popular e-commerce plugins:
+
+* [WooCommerce](https://woocommerce.com/)
+* [Easy Digital Downloads](https://easydigitaldownloads.com/?ref=5375)
+* [SureCart](https://surecart.com/?sc=298) **[Soon]**
+
+Visit [our website](https://ukiyo.yabe.land) for more information.
+
+= Love Yabe Ukiyo? =
+- Purchase the [Pro version](https://ukiyo.yabe.land)
+- Join our [Facebook Group](https://www.facebook.com/groups/1142662969627943)
+- Or rate us on [WordPress](https://wordpress.org/support/plugin/yabe-ukiyo/reviews/?filter=5/#new-post)
+
+= Credits =
+- Image by [Freepik](https://www.flaticon.com/free-icon/forest_3401828) on Flaticon
+
+== Changelog ==
+
+Note: The Pro version has a version number with one higher first digit than the Free version. 
+
+For instance:
+Free version **1**.0.5
+Pro version **2**.0.5
+
+
+= 1.0.0 =
+* **New**: Plugin rebuilt from scratch
+
+= 0.0.0 =
+* 🐣 Initial release.
