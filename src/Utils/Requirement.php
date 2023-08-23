@@ -105,9 +105,10 @@ class Requirement
      */
     public function theme(string $parentTheme, ?string $version = null) : self
     {
+        $theme = \wp_get_theme();
         if (\get_template() !== $parentTheme) {
             $this->doesNotMeet[] = \sprintf('<strong>%s</strong>', $parentTheme);
-        } elseif ($version && \version_compare(\wp_get_theme()->get('Version'), $version, '<')) {
+        } elseif ($version && \version_compare(($theme->parent() ?: $theme)->get('Version'), $version, '<')) {
             $this->doesNotMeet[] = \sprintf('<strong>%s</strong> <code>%s</code> or higher', $parentTheme, $version);
         }
         return $this;
