@@ -14,7 +14,6 @@ namespace Yabe\Ukiyo\Utils;
 use _YabeUkiyo\UKIYO;
 /**
  * Check plugin requirements.
- * TODO: Adopt from Yabe\Bricks\Utils\Requirement
  *
  * @since 1.0.0
  */

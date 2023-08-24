@@ -25,11 +25,11 @@ class UKIYO
     /**
      * @var string
      */
-    public const VERSION = '1.0.1';
+    public const VERSION = '1.0.2';
     /**
      * @var int
      */
-    public const VERSION_ID = 10001;
+    public const VERSION_ID = 10002;
     /**
      * @var int
      */
@@ -41,7 +41,7 @@ class UKIYO
     /**
      * @var int
      */
-    public const RELEASE_VERSION = 1;
+    public const RELEASE_VERSION = 2;
     /**
      * @var string
      */

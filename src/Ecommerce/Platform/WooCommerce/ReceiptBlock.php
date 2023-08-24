@@ -54,8 +54,11 @@ class ReceiptBlock
             <td class="yabe-ukiyo_cel_expire">
                 <span class="yabe-ukiyo_expire">%s</span>
             </td>
-            <td class="yabe-ukiyo_cel_sitekey">
-                <span class="yabe-ukiyo_sitekey"><code>%s</code></span>
+            <td class="yabe-ukiyo_cel_license_key">
+                <span class="yabe-ukiyo_license_key"><code>%s</code></span>
+            </td>
+            <td class="yabe-ukiyo_cel_token">
+                <span class="yabe-ukiyo_token"><code>%s</code></span>
             </td>
         </tr>
     </tbody>
@@ -76,7 +79,7 @@ HTML;
             }
             $max_sites = $row->max_sites ?: \__('Unlimited', 'yabe-ukiyo');
             $total_activation = $row->sites_count;
-            $table_body .= \sprintf($row_template, \get_post($licenseOrder->product_id)->post_title, $row->status ? 'Active' : 'Deactive', $total_activation . ' / ' . $max_sites, $row->expired_at ? \date('M d, Y', (int) $row->expired_at) : '', \base64_encode("{$site_url}\n{$site_name}\n!ukiyo:{$row->license_key}"));
+            $table_body .= \sprintf($row_template, \get_post($licenseOrder->product_id)->post_title, $row->status ? 'Active' : 'Deactive', $total_activation . ' / ' . $max_sites, $row->expired_at ? \date('M d, Y', (int) $row->expired_at) : '', $row->license_key, \base64_encode("{$site_url}\n{$site_name}\n!ukiyo:{$row->license_key}"));
         }
         $template = <<<HTML
     <h3>%s</h3>
@@ -93,7 +96,7 @@ HTML;
         {$table_body}
     </table>
 HTML;
-        $output = \sprintf($template, \__('Yabe Ukiyo License', 'yabe-ukiyo'), \__('Product', 'yabe-ukiyo'), \__('Status', 'yabe-ukiyo'), \__('Activation', 'yabe-ukiyo'), \__('Expired at', 'yabe-ukiyo'), \__('SiteKey', 'yabe-ukiyo'));
+        $output = \sprintf($template, \__('Yabe Ukiyo License', 'yabe-ukiyo'), \__('Product', 'yabe-ukiyo'), \__('Status', 'yabe-ukiyo'), \__('Activation', 'yabe-ukiyo'), \__('Expired at', 'yabe-ukiyo'), \__('License Key', 'yabe-ukiyo'), \__('Token', 'yabe-ukiyo'));
         $output .= <<<'HTML'
     <style>
         .yabe-ukiyo_receipt {
@@ -111,7 +114,8 @@ HTML;
             text-align: center;
         }
 
-        .yabe-ukiyo_receipt .yabe-ukiyo_cel_sitekey {
+        .yabe-ukiyo_receipt .yabe-ukiyo_cel_license_key,
+        .yabe-ukiyo_receipt .yabe-ukiyo_cel_token {
             overflow-wrap: anywhere;
         }
     </style>

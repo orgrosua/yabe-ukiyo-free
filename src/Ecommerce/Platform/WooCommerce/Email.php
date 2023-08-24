@@ -64,8 +64,9 @@ class Email
             if ($row->expired_at) {
                 $table_body .= '<br><b>Expire at:</b> ' . \date('M d, Y', (int) $row->expired_at);
             }
-            $siteKey = \base64_encode("{$site_url}\n{$site_name}\n{$row->license_key}");
-            $table_body .= \sprintf('<br><b>SiteKey:</b> <code>%s</code>', $siteKey);
+            $token = \base64_encode("{$site_url}\n{$site_name}\n{$row->license_key}");
+            $table_body .= \sprintf('<br><b>License Key:</b> <code>%s</code>', $row->license_key);
+            $table_body .= \sprintf('<br><b>Token:</b> <code>%s</code>', $token);
             $table_body .= '<br><br>';
         }
         $email_template = <<<HTML
