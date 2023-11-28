@@ -12,7 +12,7 @@ declare (strict_types=1);
 namespace Yabe\Ukiyo;
 
 use _YabeUkiyo\Rosua\Migrations\Migrator;
-use _YabeUkiyo\UKIYO;
+use _YabeUkiyo\YABE_UKIYO;
 /**
  * Manage the plugin custom database tables.
  *
@@ -23,7 +23,7 @@ final class Migration
     private Migrator $migrator;
     public function __construct()
     {
-        $this->migrator = new Migrator(['tableName' => 'ukiyo_migrations', 'namespace' => 'Yabe\\Ukiyo\\Migrations', 'directory' => 'migrations', 'basePath' => \dirname(UKIYO::FILE), 'commandNamespace' => 'ukiyo migrations']);
+        $this->migrator = new Migrator(['tableName' => 'ukiyo_migrations', 'namespace' => 'Yabe\\Ukiyo\\Migrations', 'directory' => 'migrations', 'basePath' => \dirname(YABE_UKIYO::FILE), 'commandNamespace' => 'ukiyo migrations']);
         \add_action('a!yabe/ukiyo/plugin:activate_plugin.start', fn() => $this->install());
         \add_action('a!yabe/ukiyo/plugin:upgrade_plugin.start', fn() => $this->upgrade());
         $this->migrator->boot();

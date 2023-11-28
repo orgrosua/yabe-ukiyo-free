@@ -3,8 +3,8 @@ Contributors: suabahasa, rosua
 Donate link: https://ko-fi.com/Q5Q75XSF7
 Tags: bricks builder, template library, remote templates
 Requires at least: 6.0
-Tested up to: 6.3
-Stable tag: 1.0.2
+Tested up to: 6.4
+Stable tag: 1.0.3
 Requires PHP: 7.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -55,6 +55,9 @@ For instance:
 Free version **1**.0.5
 Pro version **2**.0.5
 
+
+= 1.0.3 =
+* **Improve**: Follow the WordPress guidelines
 
 = 1.0.2 =
 * **[WooCommerce] Fix**: License key doesn't showed on the receipt page and email

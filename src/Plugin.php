@@ -13,7 +13,7 @@ namespace Yabe\Ukiyo;
 
 use _YabeUkiyo\EDD_SL\PluginUpdater;
 use Exception;
-use _YabeUkiyo\UKIYO;
+use _YabeUkiyo\YABE_UKIYO;
 use WP_Upgrader;
 use wpdb;
 use Yabe\Ukiyo\Admin\AdminPage;
@@ -96,13 +96,13 @@ final class Plugin
         \do_action('a!yabe/ukiyo/plugin:boot.start');
         $this->boot_migration();
         // (de)activation hooks.
-        \register_activation_hook(UKIYO::FILE, fn() => $this->activate_plugin());
-        \register_deactivation_hook(UKIYO::FILE, fn() => $this->deactivate_plugin());
+        \register_activation_hook(YABE_UKIYO::FILE, fn() => $this->activate_plugin());
+        \register_deactivation_hook(YABE_UKIYO::FILE, fn() => $this->deactivate_plugin());
         // upgrade hooks.
         \add_action('upgrader_process_complete', function (WP_Upgrader $wpUpgrader, array $options) : void {
             if ($options['action'] === 'update' && $options['type'] === 'plugin') {
                 foreach ($options['plugins'] as $plugin) {
-                    if ($plugin === \plugin_basename(UKIYO::FILE)) {
+                    if ($plugin === \plugin_basename(YABE_UKIYO::FILE)) {
                         $this->upgrade_plugin();
                     }
                 }
@@ -125,7 +125,7 @@ final class Plugin
         \do_action('a!yabe/ukiyo/plugin:boot_migration.start');
         /** @var wpdb $wpdb */
         global $wpdb;
-        $wpdb->yabe_ukiyo_prefix = UKIYO::DB_TABLE_PREFIX;
+        $wpdb->yabe_ukiyo_prefix = YABE_UKIYO::DB_TABLE_PREFIX;
         new \Yabe\Ukiyo\Migration();
         \do_action('a!yabe/ukiyo/plugin:boot_migration.end');
     }
@@ -143,8 +143,8 @@ final class Plugin
         if ($this->plugin_updater instanceof \_YabeUkiyo\EDD_SL\PluginUpdater) {
             return $this->plugin_updater;
         }
-        $license = \get_option(UKIYO::WP_OPTION . '_license', ['key' => '', 'opt_in_pre_release' => \false]);
-        $this->plugin_updater = new PluginUpdater(UKIYO::WP_OPTION, ['version' => UKIYO::VERSION, 'license' => $license['key'] ? \trim($license['key']) : \false, 'beta' => $license['opt_in_pre_release'], 'plugin_file' => UKIYO::FILE, 'item_id' => UKIYO::EDD_STORE['item_id'], 'store_url' => UKIYO::EDD_STORE['store_url'], 'author' => UKIYO::EDD_STORE['author']]);
+        $license = \get_option(YABE_UKIYO::WP_OPTION . '_license', ['key' => '', 'opt_in_pre_release' => \false]);
+        $this->plugin_updater = new PluginUpdater(YABE_UKIYO::WP_OPTION, ['version' => YABE_UKIYO::VERSION, 'license' => $license['key'] ? \trim($license['key']) : \false, 'beta' => $license['opt_in_pre_release'], 'plugin_file' => YABE_UKIYO::FILE, 'item_id' => YABE_UKIYO::EDD_STORE['item_id'], 'store_url' => YABE_UKIYO::EDD_STORE['store_url'], 'author' => YABE_UKIYO::EDD_STORE['author']]);
         return $this->plugin_updater;
     }
     /**
@@ -154,7 +154,7 @@ final class Plugin
     private function activate_plugin() : void
     {
         \do_action('a!yabe/ukiyo/plugin:activate_plugin.start');
-        \update_option(UKIYO::WP_OPTION . '_version', UKIYO::VERSION);
+        \update_option(YABE_UKIYO::WP_OPTION . '_version', YABE_UKIYO::VERSION);
         $this->maybe_embedded_license();
         \do_action('a!yabe/ukiyo/plugin:activate_plugin.end');
     }
@@ -181,7 +181,7 @@ final class Plugin
     {
         \do_action('a!yabe/ukiyo/plugin:init_plugin.start');
         // Load translations.
-        \load_plugin_textdomain(UKIYO::TEXT_DOMAIN, \false, \dirname(\plugin_basename(UKIYO::FILE)) . '/languages/');
+        \load_plugin_textdomain(YABE_UKIYO::TEXT_DOMAIN);
         // Instantiate the AdminPage class.
         new Runtime();
         new AdminPage();
@@ -197,7 +197,7 @@ final class Plugin
         new ApiRouter();
         if (\is_admin()) {
             \add_action('admin_notices', static fn() => Notice::admin_notices());
-            \add_filter('plugin_action_links_' . \plugin_basename(UKIYO::FILE), fn($links) => $this->plugin_action_links($links));
+            \add_filter('plugin_action_links_' . \plugin_basename(YABE_UKIYO::FILE), fn($links) => $this->plugin_action_links($links));
         }
         \do_action('a!yabe/ukiyo/plugin:plugins_loaded.end');
     }
@@ -228,17 +228,17 @@ final class Plugin
         if (!\class_exists(PluginUpdater::class)) {
             return;
         }
-        $license_file = \dirname(UKIYO::FILE) . '/license-data.php';
+        $license_file = \dirname(YABE_UKIYO::FILE) . '/license-data.php';
         if (!\file_exists($license_file)) {
             return;
         }
         require_once $license_file;
-        $const_name = 'ROSUA_EMBEDDED_LICENSE_KEY_' . UKIYO::EDD_STORE['item_id'];
+        $const_name = 'ROSUA_EMBEDDED_LICENSE_KEY_' . YABE_UKIYO::EDD_STORE['item_id'];
         if (!\defined($const_name)) {
             return;
         }
         $license_key = \constant($const_name);
-        \update_option(UKIYO::WP_OPTION . '_license', ['key' => $license_key, 'opt_in_pre_release' => \false]);
+        \update_option(YABE_UKIYO::WP_OPTION . '_license', ['key' => $license_key, 'opt_in_pre_release' => \false]);
         \unlink($license_file);
         // activate the license.
         $this->maybe_update_plugin()->activate($license_key);

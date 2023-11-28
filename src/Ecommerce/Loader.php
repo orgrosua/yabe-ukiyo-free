@@ -14,7 +14,7 @@ namespace Yabe\Ukiyo\Ecommerce;
 use Exception;
 use ReflectionClass;
 use _YabeUkiyo\Symfony\Component\Finder\Finder;
-use _YabeUkiyo\UKIYO;
+use _YabeUkiyo\YABE_UKIYO;
 class Loader
 {
     /**
@@ -66,7 +66,7 @@ class Loader
     public function scan_platforms()
     {
         // Get cached Platforms
-        $transient_name = 'ukiyo_scanned_platforms_' . UKIYO::VERSION;
+        $transient_name = 'ukiyo_scanned_platforms_' . YABE_UKIYO::VERSION;
         /** @var PlatformInterface[]|false $cached */
         $cached = \get_transient($transient_name);
         if (!\WP_DEBUG && $cached !== \false) {

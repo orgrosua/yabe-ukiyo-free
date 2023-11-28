@@ -48,7 +48,7 @@ class Remote extends AbstractApi implements ApiInterface
     }
     private function permission_callback(WP_REST_Request $wprestRequest) : bool
     {
-        return \wp_verify_nonce($wprestRequest->get_header('X-WP-Nonce'), 'wp_rest') && \current_user_can('manage_options');
+        return \wp_verify_nonce(\sanitize_text_field(\wp_unslash($wprestRequest->get_header('X-WP-Nonce'))), 'wp_rest') && \current_user_can('manage_options');
     }
     /**
      * Workaround to overcome the CORS issue.
@@ -83,16 +83,19 @@ class Remote extends AbstractApi implements ApiInterface
         $where_clause = [];
         if ($search) {
             $escaped_search = '%' . $wpdb->esc_like($search) . '%';
-            $where_clause[] = $wpdb->prepare("( r.title LIKE '%1\$s' OR r.remote_url LIKE '%1\$s' OR r.license_key LIKE '%1\$s' )", $escaped_search);
+            $where_clause[] = $wpdb->prepare("( r.title LIKE %s OR r.remote_url LIKE %s OR r.license_key LIKE %s )", $escaped_search, $escaped_search, $escaped_search);
         }
         $where_clause = $where_clause !== [] ? 'WHERE ' . \implode(' AND ', $where_clause) : '';
-        $sql = "\n            SELECT\n                r.*\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n            {$where_clause}\n            LIMIT {$per_page} OFFSET {$offset}\n        ";
-        $result = $wpdb->get_results($sql);
+        $result = $wpdb->get_results(
+            //phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $wpdb->prepare("SELECT r.* FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r {$where_clause} LIMIT %d OFFSET %d", $per_page, $offset)
+        );
         foreach ($result as $row) {
             $items[] = ['id' => (int) $row->id, 'status' => (bool) $row->status, 'title' => $row->title, 'remote_url' => $row->remote_url, 'license_key' => $row->license_key, 'created_at' => (int) $row->created_at, 'updated_at' => (int) $row->updated_at];
         }
         $total_exists = (int) $wpdb->get_var("\n            SELECT COUNT(*)\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n        ");
-        $total_filtered = (int) $wpdb->get_var("\n            SELECT COUNT(*)\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n            {$where_clause}\n        ");
+        //phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $total_filtered = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r {$where_clause}");
         $total_pages = \ceil($total_filtered / $per_page);
         $from = $items !== [] ? ($page - 1) * $per_page + 1 : null;
         $to = $items !== [] ? $from + \count($items) - 1 : null;
@@ -120,9 +123,7 @@ class Remote extends AbstractApi implements ApiInterface
         $payload = $wprestRequest->get_json_params();
         $id = (int) $url_params['id'];
         $status = (bool) $payload['status'];
-        $sql = "\n            SELECT COUNT(*)\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n            WHERE id = %d\n        ";
-        $sql = $wpdb->prepare($sql, $id);
-        $count = (int) $wpdb->get_var($sql);
+        $count = (int) $wpdb->get_var($wpdb->prepare("\n                SELECT COUNT(*)\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n                WHERE id = %d\n            ", $id));
         if ($count === 0) {
             return new WP_REST_Response(['message' => \__('Remote not found', 'yabe-ukiyo')], 404, []);
         }
@@ -136,9 +137,7 @@ class Remote extends AbstractApi implements ApiInterface
         global $wpdb;
         $url_params = $wprestRequest->get_url_params();
         $id = (int) $url_params['id'];
-        $sql = "\n            SELECT *\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n            WHERE id = %d\n        ";
-        $sql = $wpdb->prepare($sql, $id);
-        $item = $wpdb->get_row($sql);
+        $item = $wpdb->get_row($wpdb->prepare("\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n                WHERE id = %d\n            ", $id));
         if (!$item) {
             return new WP_REST_Response(['message' => \__('Remote not found', 'yabe-ukiyo')], 404, []);
         }
@@ -152,9 +151,7 @@ class Remote extends AbstractApi implements ApiInterface
         global $wpdb;
         $url_params = $wprestRequest->get_url_params();
         $id = (int) $url_params['id'];
-        $sql = "\n            SELECT *\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n            WHERE id = %d\n        ";
-        $sql = $wpdb->prepare($sql, $id);
-        $row = $wpdb->get_row($sql);
+        $row = $wpdb->get_row($wpdb->prepare("\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n                WHERE id = %d\n            ", $id));
         if (!$row) {
             return new WP_REST_Response(['message' => \__('Remote not found', 'yabe-ukiyo')], 404, []);
         }
@@ -168,9 +165,7 @@ class Remote extends AbstractApi implements ApiInterface
         $url_params = $wprestRequest->get_url_params();
         $payload = $wprestRequest->get_json_params();
         $id = (int) $url_params['id'];
-        $sql = "\n            SELECT COUNT(*)\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n            WHERE id = %d\n        ";
-        $sql = $wpdb->prepare($sql, $id);
-        $count = (int) $wpdb->get_var($sql);
+        $count = (int) $wpdb->get_var($wpdb->prepare("\n                SELECT COUNT(*)\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n                WHERE id = %d\n            ", $id));
         if ($count === 0) {
             return new WP_REST_Response(['message' => \__('Remote not found', 'yabe-ukiyo')], 404, []);
         }

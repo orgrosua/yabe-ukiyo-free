@@ -111,13 +111,9 @@ class Payment
     {
         /** @var wpdb $wpdb */
         global $wpdb;
-        $sql = "\n            SELECT *\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders o\n            WHERE \n                o.vendor = 'woocommerce'\n                AND o.order_id = %d\n        ";
-        $sql = $wpdb->prepare($sql, $order_id);
-        $licenseOrders = $wpdb->get_results($sql);
+        $licenseOrders = $wpdb->get_results($wpdb->prepare("\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders o\n                WHERE \n                    o.vendor = 'woocommerce'\n                    AND o.order_id = %d\n            ", $order_id));
         foreach ($licenseOrders as $licenseOrder) {
-            $sql = "\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                WHERE l.id = %d\n            ";
-            $sql = $wpdb->prepare($sql, $licenseOrder->license_id);
-            $row = $wpdb->get_row($sql);
+            $row = $wpdb->get_row($sql = $wpdb->prepare("\n                    SELECT *\n                    FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                    WHERE l.id = %d\n                ", $licenseOrder->license_id));
             if (!$row) {
                 continue;
             }
@@ -136,13 +132,9 @@ class Payment
         }
         /** @var wpdb $wpdb */
         global $wpdb;
-        $sql = "\n            SELECT *\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders o\n            WHERE \n                o.vendor = 'woocommerce'\n                AND o.order_id = %d\n        ";
-        $sql = $wpdb->prepare($sql, $wcOrder->get_id());
-        $licenseOrders = $wpdb->get_results($sql);
+        $licenseOrders = $wpdb->get_results($wpdb->prepare("\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders o\n                WHERE \n                    o.vendor = 'woocommerce'\n                    AND o.order_id = %d\n            ", $wcOrder->get_id()));
         foreach ($licenseOrders as $licenseOrder) {
-            $sql = "\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                WHERE l.id = %d\n            ";
-            $sql = $wpdb->prepare($sql, $licenseOrder->license_id);
-            $row = $wpdb->get_row($sql);
+            $row = $wpdb->get_row($wpdb->prepare("\n                    SELECT *\n                    FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                    WHERE l.id = %d\n                ", $licenseOrder->license_id));
             if (!$row) {
                 continue;
             }
@@ -208,13 +200,9 @@ class Payment
             }
             /** @var wpdb $wpdb */
             global $wpdb;
-            $sql = "\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders o\n                WHERE \n                    o.vendor = 'woocommerce'\n                    AND o.order_id = %d\n                    AND o.product_id = %d\n            ";
-            $sql = $wpdb->prepare($sql, [$order->get_id(), (int) $product->get_id()]);
-            $licenseOrders = $wpdb->get_results($sql);
+            $licenseOrders = $wpdb->get_results($wpdb->prepare("\n                    SELECT *\n                    FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders o\n                    WHERE \n                        o.vendor = 'woocommerce'\n                        AND o.order_id = %d\n                        AND o.product_id = %d\n                ", $order->get_id(), (int) $product->get_id()));
             foreach ($licenseOrders as $licenseOrder) {
-                $sql = "\n                    SELECT *\n                    FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                    WHERE l.id = %d\n                ";
-                $sql = $wpdb->prepare($sql, $licenseOrder->license_id);
-                $row = $wpdb->get_row($sql);
+                $row = $wpdb->get_row($wpdb->prepare("\n                        SELECT *\n                        FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                        WHERE l.id = %d\n                    ", $licenseOrder->license_id));
                 if (!$row) {
                     continue;
                 }

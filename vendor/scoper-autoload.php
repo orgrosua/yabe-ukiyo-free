@@ -28,7 +28,7 @@ if (!function_exists('humbug_phpscoper_expose_class')) {
         }
     }
 }
-humbug_phpscoper_expose_class('UKIYO', '_YabeUkiyo\UKIYO');
+humbug_phpscoper_expose_class('YABE_UKIYO', '_YabeUkiyo\YABE_UKIYO');
 humbug_phpscoper_expose_class('Normalizer', '_YabeUkiyo\Normalizer');
 humbug_phpscoper_expose_class('Attribute', '_YabeUkiyo\Attribute');
 humbug_phpscoper_expose_class('PhpToken', '_YabeUkiyo\PhpToken');

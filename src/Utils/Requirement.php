@@ -11,7 +11,7 @@
 declare (strict_types=1);
 namespace Yabe\Ukiyo\Utils;
 
-use _YabeUkiyo\UKIYO;
+use _YabeUkiyo\YABE_UKIYO;
 /**
  * Check plugin requirements.
  *
@@ -75,23 +75,24 @@ class Requirement
     /**
      * Check if plugins are active and may have the minimum version specified.
      *
-     * @param list<string|array{0: string, 1: string}> $plugins The plugins to check. Use the plugin file path, e.g. `yabe-ukiyo/yabe-ukiyo.php`.
+     * @param list<array{slug: string, name: string, version?: string}> $plugins The plugins to check. The `version` is optional.
      */
     public function plugins(array $plugins) : self
     {
-        foreach ($plugins as $k => $v) {
-            if (\is_int($k)) {
-                if (!\is_plugin_active($v)) {
-                    $pluginName = \get_plugin_data(\WP_PLUGIN_DIR . '/' . $v)['Name'];
-                    $this->doesNotMeet[] = \sprintf('<strong>%s</strong>', $pluginName);
-                }
-            } else {
-                $pluginName = \get_plugin_data(\WP_PLUGIN_DIR . '/' . $k)['Name'];
-                if (!\is_plugin_active($k)) {
-                    $this->doesNotMeet[] = \sprintf('<strong>%s</strong>', $pluginName);
-                } elseif (\version_compare(\get_plugin_data(\WP_PLUGIN_DIR . '/' . $k)['Version'], $v, '<')) {
-                    $this->doesNotMeet[] = \sprintf('<strong>%s</strong> <code>%s</code> or higher', $pluginName, $v);
-                }
+        $installed_plugins = \get_plugins();
+        foreach ($plugins as $plugin) {
+            if (!\array_key_exists($plugin['slug'], $installed_plugins) && !\in_array($plugin['slug'], $installed_plugins, \true)) {
+                $this->doesNotMeet[] = \sprintf('<strong>%s</strong> are not installed', \esc_html($plugin['name']));
+                continue;
+            }
+            $pluginData = \get_plugin_data(\WP_PLUGIN_DIR . '/' . $plugin['slug']);
+            if (isset($plugin['version']) && \version_compare($pluginData['Version'], $plugin['version'], '<')) {
+                $this->doesNotMeet[] = \sprintf('<strong>%s</strong> <code>%s</code> or higher version', \esc_html($pluginData['Name']), $plugin['version']);
+                continue;
+            }
+            if (!\is_plugin_active($plugin['slug'])) {
+                $this->doesNotMeet[] = \sprintf('<strong>%s</strong> are not activated', \esc_html($pluginData['Name']));
+                continue;
             }
         }
         return $this;
@@ -104,26 +105,26 @@ class Requirement
      */
     public function theme(string $parentTheme, ?string $version = null) : self
     {
-        $theme = \wp_get_theme();
+        $wpTheme = \wp_get_theme();
         if (\get_template() !== $parentTheme) {
             $this->doesNotMeet[] = \sprintf('<strong>%s</strong>', $parentTheme);
-        } elseif ($version && \version_compare(($theme->parent() ?: $theme)->get('Version'), $version, '<')) {
+        } elseif ($version && \version_compare(($wpTheme->parent() ?: $wpTheme)->get('Version'), $version, '<')) {
             $this->doesNotMeet[] = \sprintf('<strong>%s</strong> <code>%s</code> or higher', $parentTheme, $version);
         }
         return $this;
     }
     public function printNotice()
     {
-        $name = \esc_html(\get_plugin_data(UKIYO::FILE, \false)['Name']);
+        // $name = esc_html(get_plugin_data(YABE_UKIYO::FILE, false)['Name']);
         if (!\current_user_can('activate_plugins')) {
             return;
         }
         $notice = \sprintf(
             /* translators: 1: plugin name, 2: list of requirements */
-            \esc_html__('The %1$s plugin minimum requirements are not met:', 'yabe-ukiyo'),
-            '<strong>' . $name . '</strong>'
+            \__('The <strong>%1$s</strong> plugin minimum requirements are not met:', 'yabe-ukiyo'),
+            \esc_html(\get_plugin_data(YABE_UKIYO::FILE, \false)['Name'])
         );
         $requirements = '<ul><li>' . \implode('</li><li>', $this->doesNotMeet) . '</li></ul>';
-        \printf('<div class="notice notice-error"><p>%1$s</p>%2$s</div>', $notice, $requirements);
+        \printf('<div class="notice notice-error"><p>%1$s</p>%2$s</div>', \wp_kses_post($notice), \wp_kses_post($requirements));
     }
 }

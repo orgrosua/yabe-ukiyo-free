@@ -39,88 +39,98 @@ class ReceiptBlock
             return;
         }
         $table_body = '';
-        $row_template = <<<HTML
-    <tbody>
-        <tr>
-            <td class="yabe-ukiyo_cel_name">
-                <span class="yabe-ukiyo_name">%s</span>
-            </td>
-            <td class="yabe-ukiyo_cel_status">
-                <span class="yabe-ukiyo_status">%s</span>
-            </td>
-            <td class="yabe-ukiyo_cel_activation">
-                <span class="yabe-ukiyo_activation">%s</span>
-            </td>
-            <td class="yabe-ukiyo_cel_expire">
-                <span class="yabe-ukiyo_expire">%s</span>
-            </td>
-            <td class="yabe-ukiyo_cel_license_key">
-                <span class="yabe-ukiyo_license_key"><code>%s</code></span>
-            </td>
-            <td class="yabe-ukiyo_cel_token">
-                <span class="yabe-ukiyo_token"><code>%s</code></span>
-            </td>
-        </tr>
-    </tbody>
-HTML;
+        $row_template = '
+            <tbody>
+                <tr>
+                    <td class="yabe-ukiyo_cel_name">
+                        <span class="yabe-ukiyo_name">%s</span>
+                    </td>
+                    <td class="yabe-ukiyo_cel_status">
+                        <span class="yabe-ukiyo_status">%s</span>
+                    </td>
+                    <td class="yabe-ukiyo_cel_activation">
+                        <span class="yabe-ukiyo_activation">%s</span>
+                    </td>
+                    <td class="yabe-ukiyo_cel_expire">
+                        <span class="yabe-ukiyo_expire">%s</span>
+                    </td>
+                    <td class="yabe-ukiyo_cel_license_key">
+                        <span class="yabe-ukiyo_license_key"><code>%s</code></span>
+                    </td>
+                    <td class="yabe-ukiyo_cel_token">
+                        <span class="yabe-ukiyo_token"><code>%s</code></span>
+                    </td>
+                </tr>
+            </tbody>
+        ';
         /** @var wpdb $wpdb */
         global $wpdb;
-        $sql = "\n            SELECT *\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders o\n            WHERE \n                o.vendor = 'woocommerce'\n                AND o.order_id = %d\n        ";
-        $sql = $wpdb->prepare($sql, (int) $wcAbstractOrder->get_id());
-        $licenseOrders = $wpdb->get_results($sql);
+        $licenseOrders = $wpdb->get_results($wpdb->prepare("\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders o\n                WHERE \n                    o.vendor = 'woocommerce'\n                    AND o.order_id = %d\n            ", (int) $wcAbstractOrder->get_id()));
         $site_url = \get_site_url();
         $site_name = \get_bloginfo('name');
         foreach ($licenseOrders as $licenseOrder) {
-            $sql = "\n                SELECT \n                    l.*,\n                    COUNT(s.id) AS sites_count\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                LEFT JOIN {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites s ON s.license_id = l.id\n                WHERE l.id = %d\n                GROUP BY l.id\n            ";
-            $sql = $wpdb->prepare($sql, $licenseOrder->license_id);
-            $row = $wpdb->get_row($sql);
+            $row = $wpdb->get_row($wpdb->prepare("\n                    SELECT \n                        l.*,\n                        COUNT(s.id) AS sites_count\n                    FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                    LEFT JOIN {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites s ON s.license_id = l.id\n                    WHERE l.id = %d\n                    GROUP BY l.id\n                ", $licenseOrder->license_id));
             if (!$row) {
                 continue;
             }
             $max_sites = $row->max_sites ?: \__('Unlimited', 'yabe-ukiyo');
             $total_activation = $row->sites_count;
-            $table_body .= \sprintf($row_template, \get_post($licenseOrder->product_id)->post_title, $row->status ? 'Active' : 'Deactive', $total_activation . ' / ' . $max_sites, $row->expired_at ? \date('M d, Y', (int) $row->expired_at) : '', $row->license_key, \base64_encode("{$site_url}\n{$site_name}\n!ukiyo:{$row->license_key}"));
+            $table_body .= \sprintf($row_template, \esc_html(\get_post($licenseOrder->product_id)->post_title), $row->status ? 'Active' : 'Deactive', \esc_html($total_activation . ' / ' . $max_sites), $row->expired_at ? \date('M d, Y', (int) $row->expired_at) : '', \esc_html($row->license_key), \base64_encode("{$site_url}\n{$site_name}\n!ukiyo:{$row->license_key}"));
         }
-        $template = <<<HTML
-    <h3>%s</h3>
-    <table id="yabe-ukiyo_receipt" class="yabe-ukiyo_receipt">
-        <thead>
-            <tr>
-                <th class="yabe-ukiyo_header_name">%s</th>
-                <th>%s</th>
-                <th>%s</th>
-                <th>%s</th>
-                <th>%s</th>
-            </tr>
-        </thead>
-        {$table_body}
-    </table>
-HTML;
-        $output = \sprintf($template, \__('Yabe Ukiyo License', 'yabe-ukiyo'), \__('Product', 'yabe-ukiyo'), \__('Status', 'yabe-ukiyo'), \__('Activation', 'yabe-ukiyo'), \__('Expired at', 'yabe-ukiyo'), \__('License Key', 'yabe-ukiyo'), \__('Token', 'yabe-ukiyo'));
-        $output .= <<<'HTML'
-    <style>
-        .yabe-ukiyo_receipt {
-            width: 100%;
-            table-layout: auto;
-        }
+        ?>
+            <h3><?php 
+        \_e('Yabe Ukiyo License', 'yabe-ukiyo');
+        ?></h3>
+            <table id="yabe-ukiyo_receipt" class="yabe-ukiyo_receipt">
+                <thead>
+                    <tr>
+                        <th class="yabe-ukiyo_header_name"><?php 
+        \_e('Product', 'yabe-ukiyo');
+        ?></th>
+                        <th><?php 
+        \_e('Status', 'yabe-ukiyo');
+        ?></th>
+                        <th><?php 
+        \_e('Activation', 'yabe-ukiyo');
+        ?></th>
+                        <th><?php 
+        \_e('Expired at', 'yabe-ukiyo');
+        ?></th>
+                        <th><?php 
+        \_e('License Key', 'yabe-ukiyo');
+        ?></th>
+                        <th><?php 
+        \_e('Token', 'yabe-ukiyo');
+        ?></th>
+                    </tr>
+                </thead>
+                <?php 
+        echo $table_body;
+        ?>
+            </table>
 
-        .yabe-ukiyo_receipt .yabe-ukiyo_header_name {
-            text-align: left;
-        }
+            <style>
+                .yabe-ukiyo_receipt {
+                    width: 100%;
+                    table-layout: auto;
+                }
 
-        .yabe-ukiyo_receipt .yabe-ukiyo_cel_status,
-        .yabe-ukiyo_receipt .yabe-ukiyo_cel_activation,
-        .yabe-ukiyo_receipt .yabe-ukiyo_cel_expire {
-            text-align: center;
-        }
+                .yabe-ukiyo_receipt .yabe-ukiyo_header_name {
+                    text-align: left;
+                }
 
-        .yabe-ukiyo_receipt .yabe-ukiyo_cel_license_key,
-        .yabe-ukiyo_receipt .yabe-ukiyo_cel_token {
-            overflow-wrap: anywhere;
-        }
-    </style>
-HTML;
-        echo $output;
+                .yabe-ukiyo_receipt .yabe-ukiyo_cel_status,
+                .yabe-ukiyo_receipt .yabe-ukiyo_cel_activation,
+                .yabe-ukiyo_receipt .yabe-ukiyo_cel_expire {
+                    text-align: center;
+                }
+
+                .yabe-ukiyo_receipt .yabe-ukiyo_cel_license_key,
+                .yabe-ukiyo_receipt .yabe-ukiyo_cel_token {
+                    overflow-wrap: anywhere;
+                }
+            </style>
+        <?php 
     }
     private function is_order_complete(int $post_id) : bool
     {

@@ -101,7 +101,7 @@ class Server
             }
         }
         // Return all templates data
-        $templates_data = ['timestamp' => \current_time('timestamp'), 'date' => \current_time(\get_option('date_format') . ' (' . \get_option('time_format') . ')'), 'templates' => $templates, 'authors' => BricksTemplates::get_template_authors(), 'bundles' => BricksTemplates::get_template_bundles(), 'tags' => BricksTemplates::get_template_tags(), 'get' => $_GET];
+        $templates_data = ['timestamp' => \current_time('timestamp'), 'date' => \current_time(\get_option('date_format') . ' (' . \get_option('time_format') . ')'), 'templates' => $templates, 'authors' => BricksTemplates::get_template_authors(), 'bundles' => BricksTemplates::get_template_bundles(), 'tags' => BricksTemplates::get_template_tags()];
         $templates_data = \apply_filters('bricks/api/get_templates_data', $templates_data);
         // Remove 'get' data to avoid storing it in db
         unset($templates_data['get']);
@@ -115,7 +115,16 @@ class Server
      */
     private function get_templates($data)
     {
-        $parameters = $_GET;
+        $parameters = [];
+        if (isset($_GET['site'])) {
+            $parameters['site'] = \esc_url_raw($_GET['site']);
+        }
+        if (isset($_GET['password'])) {
+            $parameters['password'] = \sanitize_text_field($_GET['password']);
+        }
+        if (isset($_GET['licenseKey'])) {
+            $parameters['password'] = \sanitize_text_field($_GET['licenseKey']);
+        }
         $templates_response = $this->can_get_templates($parameters);
         if ($templates_response === \false) {
             $templates_response = BricksTemplates::can_get_templates($parameters);
@@ -145,9 +154,7 @@ class Server
         if (!$site_url || !$password) {
             return \false;
         }
-        $sql = "\n            SELECT *\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n            WHERE l.license_key = %s\n        ";
-        $sql = $wpdb->prepare($sql, $password);
-        $license = $wpdb->get_row($sql);
+        $license = $wpdb->get_row($wpdb->prepare("\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                WHERE l.license_key = %s\n            ", $password));
         // license not found, return false to use the default implementation
         if (!$license) {
             return \false;
@@ -160,9 +167,7 @@ class Server
         if ($license->expired_at && $license->expired_at < \time()) {
             return ['error' => ['code' => 'license_expired', 'message' => \esc_html__('Your license has expired.', 'yabe-ukiyo')]];
         }
-        $sql = "\n            SELECT *\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites s\n            WHERE s.license_id = %d\n        ";
-        $sql = $wpdb->prepare($sql, $license->id);
-        $sites = $wpdb->get_results($sql, \OBJECT_K);
+        $sites = $wpdb->get_results($wpdb->prepare("\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites s\n                WHERE s.license_id = %d\n            ", $license->id), \OBJECT_K);
         $site = \false;
         // find site by url
         foreach ($sites as $s) {
@@ -179,9 +184,7 @@ class Server
             }
             // register site
             $wpdb->insert(\sprintf('%s%s_sites', $wpdb->prefix, $wpdb->yabe_ukiyo_prefix), ['uid' => Common::random_slug(10), 'status' => 1, 'license_id' => $license->id, 'site_url' => $site_url, 'created_at' => \time()], ['%s', '%d', '%d', '%s', '%d']);
-            $sql = "\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites s\n                WHERE s.id = %d\n            ";
-            $sql = $wpdb->prepare($sql, $wpdb->insert_id);
-            $site = $wpdb->get_row($sql);
+            $site = $wpdb->get_row($wpdb->prepare("\n                    SELECT *\n                    FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites s\n                    WHERE s.id = %d\n                ", $wpdb->insert_id));
         }
         // site disabled, return error
         if (!(bool) $site->status) {

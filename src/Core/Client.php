@@ -11,11 +11,11 @@
 declare (strict_types=1);
 namespace Yabe\Ukiyo\Core;
 
-use Bricks\Ajax as BricksAjax;
 use Bricks\Api as BricksApi;
+use Bricks\Capabilities as BricksCapabilities;
 use Bricks\Helpers as BricksHelpers;
 use Bricks\Templates as BricksTemplates;
-use _YabeUkiyo\UKIYO;
+use _YabeUkiyo\YABE_UKIYO;
 use wpdb;
 /**
  * The client-side runtime.
@@ -29,6 +29,40 @@ class Client
         \add_action('wp_ajax_bricks_get_remote_templates_data', fn() => $this->ajax_get_remote_templates_data(), 1);
     }
     /**
+     * Verify nonce used in AJAX call
+     *
+     * @since 1.5.4
+     *
+     * @return void
+     * 
+     * @see \Bricks\Ajax::verify_nonce()
+     */
+    public function verify_nonce()
+    {
+        if (!\check_ajax_referer('bricks-nonce', 'nonce', \false)) {
+            \wp_send_json_error('verify_nonce: "bricks-nonce" is invalid.');
+        }
+    }
+    /**
+     * Verify request: nonce and user access
+     *
+     * Check for builder in order to not trigger on wp_auth_check
+     *
+     * @since 1.0
+     * 
+     * @see \Bricks\Ajax::verify_request()
+     * @api \Bricks\Capabilities::current_user_can_use_builder()
+     */
+    public function verify_request()
+    {
+        $this->verify_nonce();
+        // Verfiy user access (NOTE: get_the_ID() returns 0 in AJAX call)
+        $post_id = !empty($_POST['postId']) ? $_POST['postId'] : \get_the_ID();
+        if (!BricksCapabilities::current_user_can_use_builder($post_id)) {
+            \wp_send_json_error('verify_request: User can not use builder (' . \get_current_user_id() . ')');
+        }
+    }
+    /**
      * Get the remote templates data.
      * This ajax handler is overriden the Bricks' handler.
      *
@@ -36,8 +70,8 @@ class Client
      */
     public function ajax_get_remote_templates_data()
     {
-        BricksAjax::verify_request();
-        $look_in_db_first = $_POST['db'] ?? \false;
+        $this->verify_request();
+        $look_in_db_first = (bool) ($_POST['db'] ?? \false);
         $templates_data = ['timestamp' => \current_time('timestamp'), 'date' => \current_time(\get_option('date_format') . ' (' . \get_option('time_format') . ')'), 'templates' => [], 'authors' => [], 'bundles' => [], 'tags' => []];
         $remotes = $this->get_remotes();
         foreach ($remotes as $remote) {
@@ -59,8 +93,7 @@ class Client
         /** @var wpdb $wpdb */
         global $wpdb;
         $items = [];
-        $sql = "\n            SELECT *\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n            WHERE r.status = 1\n        ";
-        $result = $wpdb->get_results($sql);
+        $result = $wpdb->get_results("\n            SELECT *\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes r\n            WHERE r.status = 1\n        ");
         foreach ($result as $row) {
             $items[] = ['id' => $row->id, 'uid' => $row->uid, 'title' => $row->title, 'remote_url' => \rtrim($row->remote_url, '/'), 'license_key' => $row->license_key];
         }
@@ -73,9 +106,9 @@ class Client
      */
     private function get_remote_templates_data(array $remote)
     {
-        $cache_key = UKIYO::WP_OPTION . '_remote_' . $remote['uid'];
+        $cache_key = YABE_UKIYO::WP_OPTION . '_remote_' . $remote['uid'];
         // Use in PopupTemplates.vue mounted() to get remote templates initially without sending a remote get request
-        $look_in_db_first = $_POST['db'] ?? \false;
+        $look_in_db_first = (bool) ($_POST['db'] ?? \false);
         if (\filter_var($look_in_db_first, \FILTER_VALIDATE_BOOLEAN)) {
             $remote_templates = \get_transient($cache_key);
             if ($remote_templates) {

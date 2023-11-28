@@ -11,7 +11,7 @@
 declare (strict_types=1);
 namespace Yabe\Ukiyo\Utils;
 
-use _YabeUkiyo\UKIYO;
+use _YabeUkiyo\YABE_UKIYO;
 /**
  * Manifest friendly assets manager.
  *
@@ -29,7 +29,7 @@ class Asset
     public static function read_manifest() : array
     {
         if (static::$manifest === []) {
-            $manifest = \file_get_contents(\dirname(UKIYO::FILE) . '/build/manifest.json');
+            $manifest = \file_get_contents(\dirname(YABE_UKIYO::FILE) . '/build/manifest.json');
             $manifest = \json_decode($manifest, \true, 512, \JSON_THROW_ON_ERROR);
             static::$manifest = $manifest;
         }
@@ -42,7 +42,7 @@ class Asset
     public static function read_entrypoints() : array
     {
         if (static::$entrypoints === []) {
-            $entrypoints = \file_get_contents(\dirname(UKIYO::FILE) . '/build/entrypoints.json');
+            $entrypoints = \file_get_contents(\dirname(YABE_UKIYO::FILE) . '/build/entrypoints.json');
             $entrypoints = \json_decode($entrypoints, \true, 512, \JSON_THROW_ON_ERROR);
             static::$entrypoints = $entrypoints['entrypoints'];
         }
@@ -104,19 +104,19 @@ class Asset
      */
     public static function register_script(string $key, array $deps = [], string $src = '', bool $in_footer = \false)
     {
-        $handle = UKIYO::WP_OPTION . ':' . $key;
+        $handle = YABE_UKIYO::WP_OPTION . ':' . $key;
         if (\wp_script_is($handle, 'registered')) {
             return $handle;
         }
         if ($src === '') {
             $manifest = static::read_manifest();
             if (isset($manifest[$key])) {
-                $src = \strncmp($manifest[$key], 'http', \strlen('http')) === 0 ? $manifest[$key] : \plugins_url('build/' . $manifest[$key], UKIYO::FILE);
+                $src = \strncmp($manifest[$key], 'http', \strlen('http')) === 0 ? $manifest[$key] : \plugins_url('build/' . $manifest[$key], YABE_UKIYO::FILE);
             } else {
                 return \false;
             }
         }
-        $is_registered = \wp_register_script($handle, $src, $deps, UKIYO::VERSION, $in_footer);
+        $is_registered = \wp_register_script($handle, $src, $deps, YABE_UKIYO::VERSION, $in_footer);
         if ($is_registered) {
             return $handle;
         }
@@ -154,19 +154,19 @@ class Asset
      */
     public static function register_style(string $key, array $deps = [], string $src = '', string $media = 'all')
     {
-        $handle = UKIYO::WP_OPTION . ':' . $key;
+        $handle = YABE_UKIYO::WP_OPTION . ':' . $key;
         if (\wp_style_is($handle, 'registered')) {
             return $handle;
         }
         if ($src === '') {
             $manifest = static::read_manifest();
             if (isset($manifest[$key])) {
-                $src = \strncmp($manifest[$key], 'http', \strlen('http')) === 0 ? $manifest[$key] : \plugins_url('build/' . $manifest[$key], UKIYO::FILE);
+                $src = \strncmp($manifest[$key], 'http', \strlen('http')) === 0 ? $manifest[$key] : \plugins_url('build/' . $manifest[$key], YABE_UKIYO::FILE);
             } else {
                 return \false;
             }
         }
-        $is_registered = \wp_register_style($handle, $src, $deps, UKIYO::VERSION, $media);
+        $is_registered = \wp_register_style($handle, $src, $deps, YABE_UKIYO::VERSION, $media);
         if ($is_registered) {
             return $handle;
         }
@@ -200,6 +200,6 @@ class Asset
      */
     public static function asset_base_url() : string
     {
-        return \plugins_url('build/', UKIYO::FILE);
+        return \plugins_url('build/', YABE_UKIYO::FILE);
     }
 }

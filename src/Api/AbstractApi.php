@@ -11,11 +11,11 @@
 declare (strict_types=1);
 namespace Yabe\Ukiyo\Api;
 
-use _YabeUkiyo\UKIYO;
+use _YabeUkiyo\YABE_UKIYO;
 class AbstractApi
 {
     /**
      * @var string
      */
-    public const API_NAMESPACE = UKIYO::REST_NAMESPACE;
+    public const API_NAMESPACE = YABE_UKIYO::REST_NAMESPACE;
 }

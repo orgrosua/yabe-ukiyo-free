@@ -12,7 +12,7 @@ declare (strict_types=1);
 namespace Yabe\Ukiyo\Utils;
 
 use Exception;
-use _YabeUkiyo\UKIYO;
+use _YabeUkiyo\YABE_UKIYO;
 /**
  * Common utility functions for the plugin.
  *
@@ -59,10 +59,10 @@ class Common
         if (!\function_exists('get_plugin_data')) {
             require_once \ABSPATH . 'wp-admin/includes/plugin.php';
         }
-        $plugin_data = \wp_cache_get('plugin_data', UKIYO::WP_OPTION);
+        $plugin_data = \wp_cache_get('plugin_data', YABE_UKIYO::WP_OPTION);
         if (!$plugin_data) {
-            $plugin_data = \get_plugin_data(UKIYO::FILE);
-            \wp_cache_set('plugin_data', $plugin_data, UKIYO::WP_OPTION);
+            $plugin_data = \get_plugin_data(YABE_UKIYO::FILE);
+            \wp_cache_set('plugin_data', $plugin_data, YABE_UKIYO::WP_OPTION);
         }
         return $key ? $plugin_data[$key] : $plugin_data;
     }
@@ -85,7 +85,7 @@ class Common
                 \wp_redirect($location, $status, $x_redirect_by);
             }
         } else {
-            echo '<meta http-equiv="refresh" content="0;url=' . $location . '">';
+            echo '<meta http-equiv="refresh" content="0;url=' . \esc_url($location) . '">';
         }
         exit;
     }

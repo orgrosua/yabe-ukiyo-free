@@ -16,7 +16,7 @@ use _YabeUkiyo\Symfony\Component\PropertyAccess\Exception\AccessException;
 use _YabeUkiyo\Symfony\Component\PropertyAccess\Exception\InvalidArgumentException;
 use _YabeUkiyo\Symfony\Component\PropertyAccess\Exception\UnexpectedTypeException;
 use _YabeUkiyo\Symfony\Component\PropertyAccess\PropertyAccess;
-use _YabeUkiyo\UKIYO;
+use _YabeUkiyo\YABE_UKIYO;
 /**
  * Accessor for the plugin config.
  *
@@ -45,7 +45,7 @@ class Config
      */
     public static function get($path, $defaultValue = null)
     {
-        $options = \json_decode(\get_option(UKIYO::WP_OPTION . '_options', '{}'), null, 512, \JSON_THROW_ON_ERROR);
+        $options = \json_decode(\get_option(YABE_UKIYO::WP_OPTION . '_options', '{}'), null, 512, \JSON_THROW_ON_ERROR);
         $options = \apply_filters('f!yabe/ukiyo/api/setting/option:index_options', $options);
         try {
             return self::propertyAccessor()->getValue($options, $path);
@@ -65,9 +65,9 @@ class Config
      */
     public static function set($path, $value)
     {
-        $options = \json_decode(\get_option(UKIYO::WP_OPTION . '_options', '{}'), null, 512, \JSON_THROW_ON_ERROR);
+        $options = \json_decode(\get_option(YABE_UKIYO::WP_OPTION . '_options', '{}'), null, 512, \JSON_THROW_ON_ERROR);
         $options = \apply_filters('f!yabe/ukiyo/api/setting/option:index_options', $options);
         self::propertyAccessor()->setValue($options, $path, $value);
-        \update_option(UKIYO::WP_OPTION . '_options', \json_encode($options, \JSON_THROW_ON_ERROR));
+        \update_option(YABE_UKIYO::WP_OPTION . '_options', \json_encode($options, \JSON_THROW_ON_ERROR));
     }
 }

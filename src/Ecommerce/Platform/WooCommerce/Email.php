@@ -45,44 +45,41 @@ class Email
         }
         /** @var wpdb $wpdb */
         global $wpdb;
-        $sql = "\n            SELECT *\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders o\n            WHERE \n                o.vendor = 'woocommerce'\n                AND o.order_id = %d\n        ";
-        $sql = $wpdb->prepare($sql, $wcAbstractOrder->get_id());
-        $licenseOrders = $wpdb->get_results($sql);
+        $licenseOrders = $wpdb->get_results($wpdb->prepare("\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders o\n                WHERE \n                    o.vendor = 'woocommerce'\n                    AND o.order_id = %d\n            ", $wcAbstractOrder->get_id()));
         $site_url = \get_site_url();
         $site_name = \get_bloginfo('name');
         $table_body = '';
         foreach ($licenseOrders as $licenseOrder) {
-            $sql = "\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                WHERE l.id = %d\n            ";
-            $sql = $wpdb->prepare($sql, $licenseOrder->license_id);
-            $row = $wpdb->get_row($sql);
+            $row = $wpdb->get_row($wpdb->prepare("\n                    SELECT *\n                    FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                    WHERE l.id = %d\n                ", $licenseOrder->license_id));
             if (!$row) {
                 continue;
             }
             if (wc_get_product($licenseOrder->product_id)) {
-                $table_body .= '<br><b>Product:</b> ' . wc_get_product($licenseOrder->product_id)->get_name();
+                $table_body .= '<br><b>Product:</b> ' . \esc_html(wc_get_product($licenseOrder->product_id)->get_name());
             }
             if ($row->expired_at) {
                 $table_body .= '<br><b>Expire at:</b> ' . \date('M d, Y', (int) $row->expired_at);
             }
             $token = \base64_encode("{$site_url}\n{$site_name}\n{$row->license_key}");
-            $table_body .= \sprintf('<br><b>License Key:</b> <code>%s</code>', $row->license_key);
+            $table_body .= \sprintf('<br><b>License Key:</b> <code>%s</code>', \esc_html($row->license_key));
             $table_body .= \sprintf('<br><b>Token:</b> <code>%s</code>', $token);
             $table_body .= '<br><br>';
         }
-        $email_template = <<<HTML
-    <table width="100%" style="width: 100%; vertical-align: top; margin-bottom: 40px; padding: 0;" border="0" cellpadding="0" cellspacing="0">
-        <tbody>
-            <tr>
-                <td align="left" style="text-align: left; border: 0; padding: 0;" valign="top">
-                    <h2 style="color: #7f54b3; display: block; font-size: 18px; font-weight: bold; line-height: 130%; margin: 0 0 18px; text-align: left;">Yabe Ukiyo License</h2>
-                    <div style="padding: 12px; color: #636363; border: 1px solid #e5e5e5;" >
-                        {$table_body}
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-HTML;
-        echo $email_template;
+        ?>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0" style="width: 100%; vertical-align: top; margin-bottom: 40px; padding: 0;">
+                <tbody>
+                    <tr>
+                        <td style="text-align: left; border: 0; padding: 0;" valign="top">
+                            <h2 style="color: #7f54b3; display: block; font-size: 18px; font-weight: bold; line-height: 130%; margin: 0 0 18px; text-align: left;">Yabe Ukiyo License</h2>
+                            <div style="padding: 12px; color: #636363; border: 1px solid #e5e5e5;" >
+                                <?php 
+        echo $table_body;
+        ?>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        <?php 
     }
 }

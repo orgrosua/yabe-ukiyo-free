@@ -16,7 +16,7 @@ namespace _YabeUkiyo;
  *
  * @since 1.0.0
  */
-class UKIYO
+class YABE_UKIYO
 {
     /**
      * @var string
@@ -25,11 +25,11 @@ class UKIYO
     /**
      * @var string
      */
-    public const VERSION = '1.0.2';
+    public const VERSION = '1.0.3';
     /**
      * @var int
      */
-    public const VERSION_ID = 10002;
+    public const VERSION_ID = 10003;
     /**
      * @var int
      */
@@ -41,7 +41,7 @@ class UKIYO
     /**
      * @var int
      */
-    public const RELEASE_VERSION = 2;
+    public const RELEASE_VERSION = 3;
     /**
      * @var string
      */
@@ -75,4 +75,4 @@ class UKIYO
  *
  * @since 1.0.0
  */
-\class_alias('_YabeUkiyo\\UKIYO', 'UKIYO', \false);
+\class_alias('_YabeUkiyo\\YABE_UKIYO', 'YABE_UKIYO', \false);

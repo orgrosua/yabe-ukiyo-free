@@ -13,7 +13,7 @@ namespace Yabe\Ukiyo\Api;
 
 use ReflectionClass;
 use _YabeUkiyo\Symfony\Component\Finder\Finder;
-use _YabeUkiyo\UKIYO;
+use _YabeUkiyo\YABE_UKIYO;
 class Router
 {
     /**
@@ -32,7 +32,7 @@ class Router
     public function scan_apis()
     {
         // Get cached APIs
-        $transient_name = 'ukiyo_scanned_apis_' . UKIYO::VERSION;
+        $transient_name = 'ukiyo_scanned_apis_' . YABE_UKIYO::VERSION;
         /** @var ApiInterface[]|false $cached */
         $cached = \get_transient($transient_name);
         if (!\WP_DEBUG && $cached !== \false) {

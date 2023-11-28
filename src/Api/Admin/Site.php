@@ -41,7 +41,7 @@ class Site extends AbstractApi implements ApiInterface
     }
     private function permission_callback(WP_REST_Request $wprestRequest) : bool
     {
-        return \wp_verify_nonce($wprestRequest->get_header('X-WP-Nonce'), 'wp_rest') && \current_user_can('manage_options');
+        return \wp_verify_nonce(\sanitize_text_field(\wp_unslash($wprestRequest->get_header('X-WP-Nonce'))), 'wp_rest') && \current_user_can('manage_options');
     }
     private function update_status(WP_REST_Request $wprestRequest) : WP_REST_Response
     {
@@ -51,9 +51,7 @@ class Site extends AbstractApi implements ApiInterface
         $payload = $wprestRequest->get_json_params();
         $id = (int) $url_params['id'];
         $status = (bool) $payload['status'];
-        $sql = "\n            SELECT COUNT(*)\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites s\n            WHERE id = %d\n        ";
-        $sql = $wpdb->prepare($sql, $id);
-        $count = (int) $wpdb->get_var($sql);
+        $count = (int) $wpdb->get_var($wpdb->prepare("\n                SELECT COUNT(*)\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites s\n                WHERE id = %d\n            ", $id));
         if ($count === 0) {
             return new WP_REST_Response(['message' => \__('Site not found', 'yabe-ukiyo')], 404, []);
         }
@@ -67,9 +65,7 @@ class Site extends AbstractApi implements ApiInterface
         global $wpdb;
         $url_params = $wprestRequest->get_url_params();
         $id = (int) $url_params['id'];
-        $sql = "\n            SELECT *\n            FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites s\n            WHERE id = %d\n        ";
-        $sql = $wpdb->prepare($sql, $id);
-        $item = $wpdb->get_row($sql);
+        $item = $wpdb->get_row($wpdb->prepare("\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites s\n                WHERE id = %d\n            ", $id));
         if (!$item) {
             return new WP_REST_Response(['message' => \__('License not found', 'yabe-ukiyo')], 404, []);
         }
