@@ -39,7 +39,6 @@ class Metabox
     }
     private function render_metabox(WP_Post $wpPost) : void
     {
-        $nonce_field = \wp_nonce_field(YABE_UKIYO::WP_OPTION, 'ukiyo_wpnonce', \false, \false);
         $should_generate = \get_post_meta($wpPost->ID, 'ukiyo_should_generate', \true) ? 'checked' : '';
         $should_renewal = \get_post_meta($wpPost->ID, 'ukiyo_should_renewal', \true) ? 'checked' : '';
         $max_sites = (int) \get_post_meta($wpPost->ID, 'ukiyo_max_sites', \true);
@@ -47,7 +46,7 @@ class Metabox
         ?>
             <div class="ukiyo-container">
                 <?php 
-        echo $nonce_field;
+        \wp_nonce_field(YABE_UKIYO::WP_OPTION, 'ukiyo_wpnonce', \false);
         ?>
                 <div>
                     <p><strong>Generate?</strong></p>
@@ -76,7 +75,7 @@ class Metabox
                         <span class="dashicons dashicons-editor-help" title="Keep empty or 0 to allow unlimited activations."></span>
                     </p>
                     <input type="number" name="ukiyo_max_sites" id="ukiyo_max_sites" value="<?php 
-        echo $max_sites;
+        echo \esc_attr($max_sites);
         ?>" min="0">
                 </div>
 
@@ -87,7 +86,7 @@ class Metabox
                     </p>
                     <div>
                         <input type="number" name="ukiyo_active_duration" id="ukiyo_active_duration" value="<?php 
-        echo $active_duration;
+        echo \esc_attr($active_duration);
         ?>" min="0">
                          days
                     </div>

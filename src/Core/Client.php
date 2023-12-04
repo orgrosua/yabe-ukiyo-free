@@ -57,7 +57,7 @@ class Client
     {
         $this->verify_nonce();
         // Verfiy user access (NOTE: get_the_ID() returns 0 in AJAX call)
-        $post_id = !empty($_POST['postId']) ? $_POST['postId'] : \get_the_ID();
+        $post_id = !empty($_POST['postId']) ? (int) \sanitize_text_field($_POST['postId']) : \get_the_ID();
         if (!BricksCapabilities::current_user_can_use_builder($post_id)) {
             \wp_send_json_error('verify_request: User can not use builder (' . \get_current_user_id() . ')');
         }

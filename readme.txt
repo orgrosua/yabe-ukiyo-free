@@ -4,7 +4,7 @@ Donate link: https://ko-fi.com/Q5Q75XSF7
 Tags: bricks builder, template library, remote templates
 Requires at least: 6.0
 Tested up to: 6.4
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 Requires PHP: 7.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -47,6 +47,13 @@ Visit [our website](https://ukiyo.yabe.land) for more information.
 = Credits =
 - Image by [Freepik](https://www.flaticon.com/free-icon/forest_3401828) on Flaticon
 
+== Frequently Asked Questions ==
+
+= Where I can find a non-compiled version of your javascript and/or CSS related source code? =
+
+The source code is available on [GitHub](https://github.com/orgrosua/yabe-ukiyo-src-assets).
+The build process related source code are not included.
+
 == Changelog ==
 
 Note: The Pro version has a version number with one higher first digit than the Free version. 
@@ -56,11 +63,11 @@ Free version **1**.0.5
 Pro version **2**.0.5
 
 
+= 1.0.6 =
+* **Improve**: Follow the WordPress guidelines
+
 = 1.0.5 =
 * **[Easy Digital Downloads] New**: Generate missing license keys for existing orders (requires EDD 3.0.0 or higher)
-
-= 1.0.3 =
-* **Improve**: Follow the WordPress guidelines
 
 = 1.0.2 =
 * **[WooCommerce] Fix**: License key doesn't showed on the receipt page and email

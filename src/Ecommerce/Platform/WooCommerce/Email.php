@@ -48,38 +48,49 @@ class Email
         $licenseOrders = $wpdb->get_results($wpdb->prepare("\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders o\n                WHERE \n                    o.vendor = 'woocommerce'\n                    AND o.order_id = %d\n            ", $wcAbstractOrder->get_id()));
         $site_url = \get_site_url();
         $site_name = \get_bloginfo('name');
-        $table_body = '';
+        ?>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="width: 100%; vertical-align: top; margin-bottom: 40px; padding: 0;">
+            <tbody>
+                <tr>
+                    <td style="text-align: left; border: 0; padding: 0;" valign="top">
+                        <h2 style="color: #7f54b3; display: block; font-size: 18px; font-weight: bold; line-height: 130%; margin: 0 0 18px; text-align: left;">Yabe Ukiyo License</h2>
+                        <div style="padding: 12px; color: #636363; border: 1px solid #e5e5e5;" >
+                            <?php 
         foreach ($licenseOrders as $licenseOrder) {
-            $row = $wpdb->get_row($wpdb->prepare("\n                    SELECT *\n                    FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                    WHERE l.id = %d\n                ", $licenseOrder->license_id));
+            $row = $wpdb->get_row($wpdb->prepare("\n                                        SELECT *\n                                        FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                                        WHERE l.id = %d\n                                    ", $licenseOrder->license_id));
             if (!$row) {
                 continue;
             }
             if (wc_get_product($licenseOrder->product_id)) {
-                $table_body .= '<br><b>Product:</b> ' . \esc_html(wc_get_product($licenseOrder->product_id)->get_name());
+                ?>
+                                    <br><b>Product:</b> <?php 
+                echo \esc_html(wc_get_product($licenseOrder->product_id)->get_name());
+                ?>
+                                    <?php 
             }
             if ($row->expired_at) {
-                $table_body .= '<br><b>Expire at:</b> ' . \date('M d, Y', (int) $row->expired_at);
+                ?>
+                                    <br><b>Expire at:</b> <?php 
+                echo \date('M d, Y', (int) $row->expired_at);
+                ?>
+                                    <?php 
             }
-            $token = \base64_encode("{$site_url}\n{$site_name}\n{$row->license_key}");
-            $table_body .= \sprintf('<br><b>License Key:</b> <code>%s</code>', \esc_html($row->license_key));
-            $table_body .= \sprintf('<br><b>Token:</b> <code>%s</code>', $token);
-            $table_body .= '<br><br>';
+            ?>
+                                <br><b>License Key:</b> <code><?php 
+            echo \esc_html($row->license_key);
+            ?></code>
+                                <br><b>Token:</b> <code><?php 
+            echo \base64_encode("{$site_url}\n{$site_name}\n{$row->license_key}");
+            ?></code>
+                                <br><br>
+                                <?php 
         }
         ?>
-            <table width="100%" border="0" cellpadding="0" cellspacing="0" style="width: 100%; vertical-align: top; margin-bottom: 40px; padding: 0;">
-                <tbody>
-                    <tr>
-                        <td style="text-align: left; border: 0; padding: 0;" valign="top">
-                            <h2 style="color: #7f54b3; display: block; font-size: 18px; font-weight: bold; line-height: 130%; margin: 0 0 18px; text-align: left;">Yabe Ukiyo License</h2>
-                            <div style="padding: 12px; color: #636363; border: 1px solid #e5e5e5;" >
-                                <?php 
-        echo $table_body;
-        ?>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
         <?php 
     }
 }
