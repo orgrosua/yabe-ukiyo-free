@@ -15,7 +15,6 @@ use Bricks\Api as BricksApi;
 use Bricks\Capabilities as BricksCapabilities;
 use Bricks\Helpers as BricksHelpers;
 use Bricks\Templates as BricksTemplates;
-use _YabeUkiyo\YABE_UKIYO;
 use wpdb;
 /**
  * The client-side runtime.
@@ -27,6 +26,21 @@ class Client
     public function __construct()
     {
         \add_action('wp_ajax_bricks_get_remote_templates_data', fn() => $this->ajax_get_remote_templates_data(), 1);
+        \add_action('wp_enqueue_scripts', fn() => $this->enqueue_scripts(), 1000001);
+    }
+    public function enqueue_scripts()
+    {
+        if (!\function_exists('_YabeUkiyo\\bricks_is_builder') || !bricks_is_builder()) {
+            return;
+        }
+        if (!\wp_script_is('bricks-builder', 'registered')) {
+            return;
+        }
+        $remoteTemplates = \array_map(function ($item) {
+            return ['url' => $item['remote_url']];
+        }, $this->get_remotes());
+        \wp_add_inline_script('bricks-builder', 'var yabeUkiyoRemoteTemplates = ' . \json_encode($remoteTemplates, \JSON_THROW_ON_ERROR), 'before');
+        \wp_add_inline_script('bricks-builder', "bricksData.remoteTemplateSettings = [...bricksData.remoteTemplateSettings, ...yabeUkiyoRemoteTemplates];", 'before');
     }
     /**
      * Verify nonce used in AJAX call
@@ -71,21 +85,32 @@ class Client
     public function ajax_get_remote_templates_data()
     {
         $this->verify_request();
-        $look_in_db_first = (bool) ($_POST['db'] ?? \false);
+        $source = \sanitize_url($_POST['source'] ?? '');
+        $single_result = \false;
         $templates_data = ['timestamp' => \current_time('timestamp'), 'date' => \current_time(\get_option('date_format') . ' (' . \get_option('time_format') . ')'), 'templates' => [], 'authors' => [], 'bundles' => [], 'tags' => []];
         $remotes = $this->get_remotes();
-        foreach ($remotes as $remote) {
-            $remote_templates_data = $this->get_remote_templates_data($remote);
-            $templates_data['templates'] = \array_merge($templates_data['templates'], $remote_templates_data['templates']);
-            $templates_data['authors'] = \array_merge($templates_data['authors'], $remote_templates_data['authors']);
-            $templates_data['bundles'] = \array_merge($templates_data['bundles'], $remote_templates_data['bundles']);
-            $templates_data['tags'] = \array_merge($templates_data['tags'], $remote_templates_data['tags']);
+        if ($source && $source != \BRICKS_REMOTE_URL) {
+            $remotes = \array_filter($remotes, function ($remote) use($source) {
+                return $remote['remote_url'] == $source;
+            });
+            $single_result = \true;
         }
-        $bricks_remote_template_data = BricksTemplates::get_remote_templates_data($look_in_db_first);
-        $templates_data['templates'] = \array_merge($templates_data['templates'], $bricks_remote_template_data['templates']);
-        $templates_data['authors'] = \array_merge($templates_data['authors'], $bricks_remote_template_data['authors']);
-        $templates_data['bundles'] = \array_merge($templates_data['bundles'], $bricks_remote_template_data['bundles']);
-        $templates_data['tags'] = \array_merge($templates_data['tags'], $bricks_remote_template_data['tags']);
+        foreach ($remotes as $remote) {
+            $remote_templates_data = $this->get_remote_templates_data($remote, $single_result);
+            if (!\array_key_exists('error', $remote_templates_data)) {
+                $templates_data['templates'] = \array_merge($templates_data['templates'], $remote_templates_data['templates']);
+                $templates_data['authors'] = \array_merge($templates_data['authors'], $remote_templates_data['authors']);
+                $templates_data['bundles'] = \array_merge($templates_data['bundles'], $remote_templates_data['bundles']);
+                $templates_data['tags'] = \array_merge($templates_data['tags'], $remote_templates_data['tags']);
+            }
+        }
+        $bricks_remote_template_data = BricksTemplates::get_remote_templates_data();
+        if (!\array_key_exists('error', $bricks_remote_template_data)) {
+            $templates_data['templates'] = \array_merge($templates_data['templates'], $bricks_remote_template_data['templates']);
+            $templates_data['authors'] = \array_merge($templates_data['authors'], $bricks_remote_template_data['authors']);
+            $templates_data['bundles'] = \array_merge($templates_data['bundles'], $bricks_remote_template_data['bundles']);
+            $templates_data['tags'] = \array_merge($templates_data['tags'], $bricks_remote_template_data['tags']);
+        }
         \wp_send_json_success($templates_data);
     }
     private function get_remotes()
@@ -104,17 +129,8 @@ class Client
      *
      * @see \Bricks\Templates::get_remote_templates_data()
      */
-    private function get_remote_templates_data(array $remote)
+    private function get_remote_templates_data(array $remote, bool $single_result = \false)
     {
-        $cache_key = YABE_UKIYO::WP_OPTION . '_remote_' . $remote['uid'];
-        // Use in PopupTemplates.vue mounted() to get remote templates initially without sending a remote get request
-        $look_in_db_first = (bool) ($_POST['db'] ?? \false);
-        if (\filter_var($look_in_db_first, \FILTER_VALIDATE_BOOLEAN)) {
-            $remote_templates = \get_transient($cache_key);
-            if ($remote_templates) {
-                return $remote_templates;
-            }
-        }
         // Remote templates data
         $remote_templates_data = ['templates' => [], 'authors' => [], 'bundles' => [], 'tags' => []];
         $remote_templates_url = \trailingslashit($remote['remote_url']) . \trailingslashit(\rest_get_url_prefix()) . \trailingslashit(BricksApi::API_NAMESPACE) . 'get-templates-data';
@@ -129,8 +145,6 @@ class Client
         // Error handling
         if (\is_wp_error($remote_templates_response)) {
             $remote_templates_data['error'] = \wp_strip_all_tags($remote_templates_response->get_error_message());
-            // Store error data and return
-            \set_transient($cache_key, $remote_templates_data, 60 * 60 * 24);
             return $remote_templates_data;
         }
         $remote_templates_data = \json_decode(\wp_remote_retrieve_body($remote_templates_response), \true, 512, \JSON_THROW_ON_ERROR);
@@ -148,7 +162,7 @@ class Client
         }
         if (\array_key_exists('bundles', $remote_templates_data)) {
             foreach ($remote_templates_data['bundles'] as $k => $v) {
-                $remote_templates_data['bundles'][$k] = \sprintf('%s [%s]', $v, $remote['title']);
+                $remote_templates_data['bundles'][$k] = $single_result ? $v : \sprintf('%s [%s]', $v, $remote['title']);
             }
         } else {
             $remote_templates_data['bundles'] = [];
@@ -158,8 +172,6 @@ class Client
         }
         // Filter remote templates data
         $remote_templates_data = \apply_filters('f!yabe/ukiyo/core/runtime:get_remote_templates_data', $remote_templates_data);
-        // Store remote templates data in db
-        \set_transient($cache_key, $remote_templates_data, 60 * 60 * 24);
         // Success: Return remote_templates_data
         return $remote_templates_data;
     }
