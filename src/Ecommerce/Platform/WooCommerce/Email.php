@@ -71,7 +71,7 @@ class Email
             if ($row->expired_at) {
                 ?>
                                     <br><b>Expire at:</b> <?php 
-                echo \date('M d, Y', (int) $row->expired_at);
+                echo \esc_html(\date('M d, Y', (int) $row->expired_at));
                 ?>
                                     <?php 
             }
@@ -80,7 +80,7 @@ class Email
             echo \esc_html($row->license_key);
             ?></code>
                                 <br><b>Token:</b> <code><?php 
-            echo \base64_encode("{$site_url}\n{$site_name}\n{$row->license_key}");
+            echo \esc_html(\base64_encode("{$site_url}\n{$site_name}\n{$row->license_key}"));
             ?></code>
                                 <br><br>
                                 <?php 

@@ -52,7 +52,7 @@ class Metabox
                     <p><strong>Generate?</strong></p>
                     <label for="ukiyo_should_generate">
                         <input type="checkbox" name="ukiyo_should_generate" id="ukiyo_should_generate" <?php 
-        echo $should_generate;
+        echo \esc_html($should_generate);
         ?>>
                         Generate the license automatically
                     </label>
@@ -62,7 +62,7 @@ class Metabox
                     <p><strong>Renewal?</strong></p>
                     <label for="ukiyo_should_renewal">
                         <input type="checkbox" name="ukiyo_should_renewal" id="ukiyo_should_renewal" <?php 
-        echo $should_renewal;
+        echo \esc_html($should_renewal);
         ?>>
                         Allow license renewal
                         <span class="dashicons dashicons-editor-help" title="Extend the expiry date for the existing license for the renewal order."></span>

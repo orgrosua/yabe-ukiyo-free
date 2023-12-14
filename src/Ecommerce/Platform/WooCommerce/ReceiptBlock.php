@@ -45,30 +45,16 @@ class ReceiptBlock
         $site_name = \get_bloginfo('name');
         ?>
 
-        <h3><?php 
-        echo \__('Yabe Ukiyo License', 'yabe-ukiyo');
-        ?></h3>
+        <h3>Yabe Ukiyo License</h3>
         <table id="yabe-ukiyo_receipt" class="yabe-ukiyo_receipt">
             <thead>
                 <tr>
-                    <th class="yabe-ukiyo_header_name"><?php 
-        echo \__('Product', 'yabe-ukiyo');
-        ?></th>
-                    <th><?php 
-        echo \__('Status', 'yabe-ukiyo');
-        ?></th>
-                    <th><?php 
-        echo \__('Activation', 'yabe-ukiyo');
-        ?></th>
-                    <th><?php 
-        echo \__('Expired at', 'yabe-ukiyo');
-        ?></th>
-                    <th><?php 
-        echo \__('License Key', 'yabe-ukiyo');
-        ?></th>
-                    <th><?php 
-        echo \__('Token', 'yabe-ukiyo');
-        ?></th>
+                    <th class="yabe-ukiyo_header_name">Product</th>
+                    <th>Status</th>
+                    <th>Activation</th>
+                    <th>Expired at</th>
+                    <th>License Key</th>
+                    <th>Token</th>
                 </tr>
             </thead>
             <tbody>
@@ -89,7 +75,7 @@ class ReceiptBlock
                     </td>
                     <td class="yabe-ukiyo_cel_status">
                         <span class="yabe-ukiyo_status"><?php 
-            echo $row->status ? 'Active' : 'Deactive';
+            echo \esc_html($row->status ? 'Active' : 'Deactive');
             ?></span>
                     </td>
                     <td class="yabe-ukiyo_cel_activation">
@@ -99,7 +85,7 @@ class ReceiptBlock
                     </td>
                     <td class="yabe-ukiyo_cel_expire">
                         <span class="yabe-ukiyo_expire"><?php 
-            echo $row->expired_at ? \date('M d, Y', (int) $row->expired_at) : '';
+            echo \esc_html($row->expired_at ? \date('M d, Y', (int) $row->expired_at) : '');
             ?></span>
                     </td>
                     <td class="yabe-ukiyo_cel_license_key">
@@ -109,7 +95,7 @@ class ReceiptBlock
                     </td>
                     <td class="yabe-ukiyo_cel_token">
                         <span class="yabe-ukiyo_token"><code><?php 
-            echo \base64_encode("{$site_url}\n{$site_name}\n!ukiyo:{$row->license_key}");
+            echo \esc_html(\base64_encode("{$site_url}\n{$site_name}\n!ukiyo:{$row->license_key}"));
             ?></code></span>
                     </td>
                 </tr>
