@@ -26,6 +26,15 @@ class Payment
     public function __construct()
     {
         /**
+         * Generates and creates licenses when payment status is completed
+         * 
+         * @package WooCommerce
+         * @link https://woocommerce.github.io/code-reference/hooks/hooks.html
+         */
+        \add_action('woocommerce_order_status_completed', fn(int $order_id) => $this->order_status_completed($order_id), 10, 1);
+        /**
+         * Revokes and deactivates licenses when payment status is updated
+         * 
          * @package WooCommerce
          * @link https://woocommerce.github.io/code-reference/hooks/hooks.html
          */
@@ -60,30 +69,36 @@ class Payment
     {
         return (int) \get_post_meta($post_id, 'ukiyo_max_sites', \true);
     }
+    private function order_status_completed(int $order_id) : void
+    {
+        $order = wc_get_order($order_id);
+        if (!$order) {
+            return;
+        }
+        $this->when_payment_status_completed($order);
+    }
     private function order_status_changed(int $order_id, string $old_status, string $new_status) : void
     {
         $order = wc_get_order($order_id);
         if (!$order) {
             return;
         }
-        if ($new_status === 'completed') {
-            $this->when_payment_status_completed($order, $old_status, $new_status);
-        } else {
+        if ($new_status !== 'completed') {
             $this->when_payment_status_canceled($order, $old_status, $new_status);
         }
     }
-    private function when_payment_status_completed(WC_Order $wcOrder, string $old_status, string $new_status) : void
+    private function when_payment_status_completed(WC_Order $wcOrder) : void
     {
         if ($this->is_order_complete($wcOrder->get_id())) {
             $this->refresh_order($wcOrder->get_id());
         } else {
-            $this->fresh_order($wcOrder, $new_status);
+            $this->fresh_order($wcOrder);
         }
     }
     /**
      * A new order was created, let's create the license
      */
-    private function fresh_order(WC_Order $wcOrder, string $new_status) : void
+    private function fresh_order(WC_Order $wcOrder) : void
     {
         /** @var wpdb $wpdb */
         global $wpdb;
@@ -99,7 +114,7 @@ class Payment
                 $wpdb->insert(\sprintf('%s%s_licenses', $wpdb->prefix, $wpdb->yabe_ukiyo_prefix), ['uid' => Common::random_slug(10), 'title' => \sprintf('[WC] #%d %s', $wcOrder->get_id(), $product->get_name()), 'license_key' => Common::random_slug(), 'status' => \true, 'expired_at' => $active_duration > 0 ? \strtotime(\sprintf('+%d days', $active_duration)) : null, 'max_sites' => $this->number_max_sites((int) $product->get_id()) > 0 ? $this->number_max_sites((int) $product->get_id()) : null, 'user_id' => $wcOrder->get_user_id(), 'created_at' => \time(), 'updated_at' => \time()], ['%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d', '%d']);
                 $license_id = $wpdb->insert_id;
                 // create license order
-                $wpdb->insert(\sprintf('%s%s_orders', $wpdb->prefix, $wpdb->yabe_ukiyo_prefix), ['created_at' => \time(), 'updated_at' => \time(), 'uid' => Common::random_slug(10), 'vendor' => 'woocommerce', 'order_id' => $wcOrder->get_id(), 'order_type' => 'shop_order', 'product_id' => (int) $product->get_id(), 'product_type' => 'product', 'order_status' => $new_status, 'customer_id' => $wcOrder->get_user_id(), 'license_id' => $license_id], ['%d', '%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%d', '%d']);
+                $wpdb->insert(\sprintf('%s%s_orders', $wpdb->prefix, $wpdb->yabe_ukiyo_prefix), ['created_at' => \time(), 'updated_at' => \time(), 'uid' => Common::random_slug(10), 'vendor' => 'woocommerce', 'order_id' => $wcOrder->get_id(), 'order_type' => 'shop_order', 'product_id' => (int) $product->get_id(), 'product_type' => 'product', 'order_status' => 'completed', 'customer_id' => $wcOrder->get_user_id(), 'license_id' => $license_id], ['%d', '%d', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%d', '%d']);
             }
         }
         \update_post_meta($wcOrder->get_id(), 'ukiyo_order_complete', \true);

@@ -34,9 +34,6 @@ class Email
     }
     private function email_after_order_table(WC_Abstract_Order $wcAbstractOrder, $sent_to_admin, $plain_text, $email)
     {
-        if (!Config::get('ecommerce.woocommerce.print_receipt_email', \false)) {
-            return;
-        }
         if (!$wcAbstractOrder) {
             return;
         }
@@ -48,42 +45,53 @@ class Email
         $licenseOrders = $wpdb->get_results($wpdb->prepare("\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders o\n                WHERE \n                    o.vendor = 'woocommerce'\n                    AND o.order_id = %d\n            ", $wcAbstractOrder->get_id()));
         $site_url = \get_site_url();
         $site_name = \get_bloginfo('name');
+        $licenseItems = [];
+        foreach ($licenseOrders as $licenseOrder) {
+            $row = $wpdb->get_row($wpdb->prepare("\n                    SELECT *\n                    FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                    WHERE l.id = %d\n                ", $licenseOrder->license_id));
+            if (!$row) {
+                continue;
+            }
+            $licenseItems[] = ['product_name' => wc_get_product($licenseOrder->product_id) ? wc_get_product($licenseOrder->product_id)->get_name() : null, 'expired_at' => $row->expired_at, 'license_key' => $row->license_key, 'token' => \base64_encode("{$site_url}\n{$site_name}\n{$row->license_key}")];
+        }
+        \do_action('f!yabe/ukiyo/ecommerce/platform/woocommerce/email:email_after_order_table', $licenseItems, $wcAbstractOrder, $plain_text, $email);
+        if (!Config::get('ecommerce.woocommerce.print_receipt_email', \false)) {
+            return;
+        }
+        $block_title = \apply_filters('f!yabe/ukiyo/ecommerce/platform/woocommerce/receipt.block_head', 'Bricks Template Licenses');
         ?>
         <table width="100%" border="0" cellpadding="0" cellspacing="0" style="width: 100%; vertical-align: top; margin-bottom: 40px; padding: 0;">
             <tbody>
                 <tr>
                     <td style="text-align: left; border: 0; padding: 0;" valign="top">
-                        <h2 style="color: #7f54b3; display: block; font-size: 18px; font-weight: bold; line-height: 130%; margin: 0 0 18px; text-align: left;">Yabe Ukiyo License</h2>
-                        <div style="padding: 12px; color: #636363; border: 1px solid #e5e5e5;" >
+                        <h2 style="color: #7f54b3; display: block; font-size: 18px; font-weight: bold; line-height: 130%; margin: 0 0 18px; text-align: left;"><?php 
+        echo \esc_html($block_title);
+        ?></h2>
+                        <div style="padding: 12px; color: #636363; border: 1px solid #e5e5e5;">
                             <?php 
-        foreach ($licenseOrders as $licenseOrder) {
-            $row = $wpdb->get_row($wpdb->prepare("\n                                        SELECT *\n                                        FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                                        WHERE l.id = %d\n                                    ", $licenseOrder->license_id));
-            if (!$row) {
-                continue;
-            }
-            if (wc_get_product($licenseOrder->product_id)) {
+        foreach ($licenseItems as $licenseItem) {
+            if ($licenseItem['product_name']) {
                 ?>
                                     <br><b>Product:</b> <?php 
                 echo \esc_html(wc_get_product($licenseOrder->product_id)->get_name());
                 ?>
-                                    <?php 
+                                <?php 
             }
-            if ($row->expired_at) {
+            if ($licenseItem['expired_at']) {
                 ?>
                                     <br><b>Expire at:</b> <?php 
-                echo \esc_html(\date('M d, Y', (int) $row->expired_at));
+                echo \esc_html(\date('M d, Y', (int) $licenseItem['expired_at']));
                 ?>
-                                    <?php 
+                                <?php 
             }
             ?>
                                 <br><b>License Key:</b> <code><?php 
-            echo \esc_html($row->license_key);
+            echo \esc_html($licenseItem['license_key']);
             ?></code>
                                 <br><b>Token:</b> <code><?php 
-            echo \esc_html(\base64_encode("{$site_url}\n{$site_name}\n{$row->license_key}"));
+            echo \esc_html($licenseItem['token']);
             ?></code>
                                 <br><br>
-                                <?php 
+                            <?php 
         }
         ?>
                         </div>
@@ -91,6 +99,7 @@ class Email
                 </tr>
             </tbody>
         </table>
-        <?php 
+
+<?php 
     }
 }
