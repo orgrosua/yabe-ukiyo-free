@@ -30,10 +30,12 @@ final class Version20230713000501 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         /** @var wpdb $wpdb */
         global $wpdb;
-        $sql = "DROP TABLE IF EXISTS `{$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses`";
-        $sql = "DROP TABLE IF EXISTS `{$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites`";
-        $sql = "DROP TABLE IF EXISTS `{$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes`";
-        $sql = "DROP TABLE IF EXISTS `{$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders`";
-        $wpdb->query($sql);
+        $sql[] = "DROP TABLE IF EXISTS `{$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses`";
+        $sql[] = "DROP TABLE IF EXISTS `{$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites`";
+        $sql[] = "DROP TABLE IF EXISTS `{$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_remotes`";
+        $sql[] = "DROP TABLE IF EXISTS `{$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_orders`";
+        foreach ($sql as $query) {
+            $wpdb->query($query);
+        }
     }
 }

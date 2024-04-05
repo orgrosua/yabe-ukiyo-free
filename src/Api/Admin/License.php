@@ -32,23 +32,19 @@ class License extends AbstractApi implements ApiInterface
     }
     public function register_custom_endpoints() : void
     {
-        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/index', ['methods' => WP_REST_Server::READABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->index($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->permission_callback($wprestRequest)]);
-        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/store', ['methods' => WP_REST_Server::CREATABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->store($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->permission_callback($wprestRequest)]);
-        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/update-status/(?P<id>\\d+)', ['methods' => WP_REST_Server::EDITABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->update_status($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->permission_callback($wprestRequest), 'args' => ['status' => ['required' => \true, 'validate_callback' => static fn($param): bool => \is_bool($param)]]]);
+        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/index', ['methods' => WP_REST_Server::READABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->index($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->centralable_permission_callback($wprestRequest)]);
+        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/store', ['methods' => WP_REST_Server::CREATABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->store($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->centralable_permission_callback($wprestRequest)]);
+        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/update-status/(?P<id>\\d+)', ['methods' => WP_REST_Server::EDITABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->update_status($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->centralable_permission_callback($wprestRequest), 'args' => ['status' => ['required' => \true, 'validate_callback' => static fn($param): bool => \is_bool($param)]]]);
         \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/delete/(?P<id>\\d+)', [
             // 'methods' => WP_REST_Server::DELETABLE, // not working on IIS server without further configuration
             'methods' => 'POST, DELETE',
             'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->destroy($wprestRequest),
-            'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->permission_callback($wprestRequest),
+            'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->centralable_permission_callback($wprestRequest),
         ]);
-        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/detail/(?P<id>\\d+)', ['methods' => WP_REST_Server::READABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->detail($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->permission_callback($wprestRequest)]);
-        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/update/(?P<id>\\d+)', ['methods' => WP_REST_Server::EDITABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->update($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->permission_callback($wprestRequest)]);
-        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/search_user', ['methods' => WP_REST_Server::READABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->search_user($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->permission_callback($wprestRequest)]);
-        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/sites/(?P<id>\\d+)', ['methods' => WP_REST_Server::READABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->sites($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->permission_callback($wprestRequest)]);
-    }
-    private function permission_callback(WP_REST_Request $wprestRequest) : bool
-    {
-        return \wp_verify_nonce(\sanitize_text_field(\wp_unslash($wprestRequest->get_header('X-WP-Nonce'))), 'wp_rest') && \current_user_can('manage_options');
+        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/detail/(?P<id>\\d+)', ['methods' => WP_REST_Server::READABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->detail($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->centralable_permission_callback($wprestRequest)]);
+        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/update/(?P<id>\\d+)', ['methods' => WP_REST_Server::EDITABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->update($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->centralable_permission_callback($wprestRequest)]);
+        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/search_user', ['methods' => WP_REST_Server::READABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->search_user($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->centralable_permission_callback($wprestRequest)]);
+        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/sites/(?P<id>\\d+)', ['methods' => WP_REST_Server::READABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->sites($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->centralable_permission_callback($wprestRequest)]);
     }
     private function index(WP_REST_Request $wprestRequest) : WP_REST_Response
     {
@@ -137,7 +133,7 @@ class License extends AbstractApi implements ApiInterface
         global $wpdb;
         $url_params = $wprestRequest->get_url_params();
         $id = (int) $url_params['id'];
-        $row = $wpdb->get_row($wpdb->prepare("\n                SELECT *\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses\n                WHERE id = %d\n            ", $id));
+        $row = $wpdb->get_row($wpdb->prepare("\n                SELECT \n                    l.*,\n                    COUNT(s.id) AS sites_count\n                FROM {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_licenses l\n                LEFT JOIN {$wpdb->prefix}{$wpdb->yabe_ukiyo_prefix}_sites s ON s.license_id = l.id\n                WHERE l.id = %d\n                GROUP BY l.id\n            ", $id));
         if (!$row) {
             return new WP_REST_Response(['message' => \__('License not found', 'yabe-ukiyo')], 404, []);
         }
@@ -148,7 +144,7 @@ class License extends AbstractApi implements ApiInterface
                 $user = (object) ['id' => (int) $found_user->ID, 'name' => $found_user->display_name, 'email' => $found_user->user_email];
             }
         }
-        $payload = ['id' => (int) $row->id, 'uid' => $row->uid, 'status' => (bool) $row->status, 'license_key' => $row->license_key, 'title' => $row->title, 'max_sites' => $row->max_sites ? (int) $row->max_sites : null, 'expired_at' => $row->expired_at ? (int) $row->expired_at : null, 'created_at' => (int) $row->created_at, 'updated_at' => (int) $row->updated_at, 'user' => $user];
+        $payload = ['id' => (int) $row->id, 'uid' => $row->uid, 'status' => (bool) $row->status, 'license_key' => $row->license_key, 'title' => $row->title, 'max_sites' => $row->max_sites ? (int) $row->max_sites : null, 'expired_at' => $row->expired_at ? (int) $row->expired_at : null, 'created_at' => (int) $row->created_at, 'updated_at' => (int) $row->updated_at, 'user' => $user, 'sites_count' => (int) $row->sites_count];
         return new WP_REST_Response($payload, 200, []);
     }
     private function update(WP_REST_Request $wprestRequest) : WP_REST_Response

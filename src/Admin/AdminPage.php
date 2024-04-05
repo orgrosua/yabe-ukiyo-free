@@ -15,6 +15,7 @@ use _YabeUkiyo\EDD_SL\PluginUpdater;
 use _YabeUkiyo\YABE_UKIYO;
 use Yabe\Ukiyo\Ecommerce\Loader as PlatformLoader;
 use Yabe\Ukiyo\Utils\Asset;
+use Yabe\Ukiyo\Utils\AssetVite;
 class AdminPage
 {
     public function __construct()
@@ -38,12 +39,14 @@ class AdminPage
     }
     private function init_hooks()
     {
+        \add_action('admin_head', static fn() => \remove_action('admin_notices', 'update_nag', 3), 1);
         \add_action('admin_enqueue_scripts', fn() => $this->enqueue_scripts(), 1000001);
     }
     private function enqueue_scripts()
     {
-        Asset::enqueue_entry('admin', [], \true);
-        \wp_set_script_translations(YABE_UKIYO::WP_OPTION . ':admin.js', 'yabe-ukiyo');
-        \wp_localize_script(YABE_UKIYO::WP_OPTION . ':admin.js', 'ukiyo', ['_version' => YABE_UKIYO::VERSION, '_wpnonce' => \wp_create_nonce(YABE_UKIYO::WP_OPTION), 'web_history' => self::get_page_url(), 'rest_api' => ['nonce' => \wp_create_nonce('wp_rest'), 'root' => \esc_url_raw(\rest_url()), 'namespace' => YABE_UKIYO::REST_NAMESPACE, 'url' => \esc_url_raw(\rest_url(YABE_UKIYO::REST_NAMESPACE))], 'assets' => ['url' => Asset::asset_base_url()], 'site_meta' => ['name' => \get_bloginfo('name'), 'site_url' => \get_site_url()], 'lite_edition' => !\class_exists(PluginUpdater::class), 'ecommerce' => ['platforms' => \array_keys(PlatformLoader::get_instance()->get_platforms())]]);
+        $handle = YABE_UKIYO::WP_OPTION . ':app';
+        AssetVite::get_instance()->enqueue_asset('assets/app.js', ['handle' => $handle, 'in_footer' => \true]);
+        \wp_set_script_translations($handle, 'yabe-ukiyo');
+        \wp_localize_script($handle, 'ukiyo', ['_version' => YABE_UKIYO::VERSION, '_wpnonce' => \wp_create_nonce(YABE_UKIYO::WP_OPTION), 'web_history' => self::get_page_url(), 'rest_api' => ['nonce' => \wp_create_nonce('wp_rest'), 'root' => \esc_url_raw(\rest_url()), 'namespace' => YABE_UKIYO::REST_NAMESPACE, 'url' => \esc_url_raw(\rest_url(YABE_UKIYO::REST_NAMESPACE))], 'assets' => ['url' => AssetVite::asset_base_url()], 'site_meta' => ['name' => \get_bloginfo('name'), 'site_url' => \get_site_url()], 'lite_edition' => !\class_exists(PluginUpdater::class), 'ecommerce' => ['platforms' => \array_keys(PlatformLoader::get_instance()->get_platforms())]]);
     }
 }

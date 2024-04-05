@@ -31,17 +31,13 @@ class Site extends AbstractApi implements ApiInterface
     }
     public function register_custom_endpoints() : void
     {
-        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/update-status/(?P<id>\\d+)', ['methods' => WP_REST_Server::EDITABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->update_status($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->permission_callback($wprestRequest), 'args' => ['status' => ['required' => \true, 'validate_callback' => static fn($param): bool => \is_bool($param)]]]);
+        \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/update-status/(?P<id>\\d+)', ['methods' => WP_REST_Server::EDITABLE, 'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->update_status($wprestRequest), 'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->centralable_permission_callback($wprestRequest), 'args' => ['status' => ['required' => \true, 'validate_callback' => static fn($param): bool => \is_bool($param)]]]);
         \register_rest_route(self::API_NAMESPACE, $this->get_prefix() . '/delete/(?P<id>\\d+)', [
             // 'methods' => WP_REST_Server::DELETABLE, // not working on IIS server without further configuration
             'methods' => 'POST, DELETE',
             'callback' => fn(WP_REST_Request $wprestRequest): WP_REST_Response => $this->destroy($wprestRequest),
-            'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->permission_callback($wprestRequest),
+            'permission_callback' => fn(WP_REST_Request $wprestRequest): bool => $this->centralable_permission_callback($wprestRequest),
         ]);
-    }
-    private function permission_callback(WP_REST_Request $wprestRequest) : bool
-    {
-        return \wp_verify_nonce(\sanitize_text_field(\wp_unslash($wprestRequest->get_header('X-WP-Nonce'))), 'wp_rest') && \current_user_can('manage_options');
     }
     private function update_status(WP_REST_Request $wprestRequest) : WP_REST_Response
     {

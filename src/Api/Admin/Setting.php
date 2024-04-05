@@ -98,8 +98,4 @@ class Setting extends AbstractApi implements ApiInterface
         }
         return $license;
     }
-    private function permission_callback(WP_REST_Request $wprestRequest) : bool
-    {
-        return \wp_verify_nonce(\sanitize_text_field(\wp_unslash($wprestRequest->get_header('X-WP-Nonce'))), 'wp_rest') && \current_user_can('manage_options');
-    }
 }

@@ -4,7 +4,7 @@ Donate link: https://ko-fi.com/Q5Q75XSF7
 Tags: bricks builder, template library, remote templates
 Requires at least: 6.0
 Tested up to: 6.4
-Stable tag: 1.0.10
+Stable tag: 2.0.0
 Requires PHP: 7.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -35,7 +35,6 @@ It's easy to sell your template library thanks to the seamless integration with 
 
 * [WooCommerce](https://woocommerce.com/)
 * [Easy Digital Downloads](https://easydigitaldownloads.com/?ref=5375)
-* [SureCart](https://surecart.com/?sc=298) **[Soon]**
 
 Visit [our website](https://ukiyo.yabe.land) for more information.
 
@@ -62,6 +61,10 @@ For instance:
 Free version **1**.0.5
 Pro version **2**.0.5
 
+
+= 2.0.0 =
+* **New**: Centralized-able license system (Pro)
+* **[Easy Digital Downloads] New**: Initial support of Centralized-able license system (Pro)
 
 = 1.0.10 =
 * **[WooCommerce] Fix**: Licenses doesn't showed on the receipt email
