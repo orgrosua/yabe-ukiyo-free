@@ -4,7 +4,7 @@ Donate link: https://ko-fi.com/Q5Q75XSF7
 Tags: bricks builder, template library, remote templates
 Requires at least: 6.0
 Tested up to: 6.4
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 Requires PHP: 7.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -62,7 +62,7 @@ Free version **1**.0.5
 Pro version **2**.0.5
 
 
-= 2.0.1 =
+= 2.0.2 =
 * **New**: Centralized-able license system (Pro)
 * **[Easy Digital Downloads] New**: Initial support of Centralized-able license system (Pro)
 
