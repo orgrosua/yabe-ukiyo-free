@@ -57,4 +57,16 @@ class Debug
         } catch (Throwable $throwable) {
         }
     }
+    public static function log(string $message, string $type = 'info')
+    {
+        if (!\defined('WP_DEBUG') || \WP_DEBUG === \false) {
+            return;
+        }
+        $log = '[' . \date('d-M-Y H:i:s e') . '] [' . \strtoupper($type) . '] ' . $message . \PHP_EOL;
+        $path = \wp_upload_dir()['basedir'] . '/ukiyo/debug/log.log';
+        try {
+            \Yabe\Ukiyo\Utils\Common::save_file($log, $path, \FILE_APPEND);
+        } catch (Throwable $throwable) {
+        }
+    }
 }
