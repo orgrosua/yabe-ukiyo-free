@@ -25,11 +25,11 @@ class YABE_UKIYO
     /**
      * @var string
      */
-    public const VERSION = '2.0.4';
+    public const VERSION = '2.0.5';
     /**
      * @var int
      */
-    public const VERSION_ID = 20004;
+    public const VERSION_ID = 20005;
     /**
      * @var int
      */
@@ -41,7 +41,7 @@ class YABE_UKIYO
     /**
      * @var int
      */
-    public const RELEASE_VERSION = 4;
+    public const RELEASE_VERSION = 5;
     /**
      * @var string
      */

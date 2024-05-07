@@ -7,7 +7,7 @@
  * Plugin Name:         Yabe Ukiyo
  * Plugin URI:          https://ukiyo.yabe.land
  * Description:         Bricks remote templates manager
- * Version:             2.0.4
+ * Version:             2.0.5
  * Requires at least:   6.0
  * Requires PHP:        7.4
  * Author:              Rosua
