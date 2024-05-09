@@ -123,7 +123,7 @@ class Server
             $parameters['password'] = \sanitize_text_field($_GET['password']);
         }
         if (isset($_GET['licenseKey'])) {
-            $parameters['password'] = \sanitize_text_field($_GET['licenseKey']);
+            $parameters['licenseKey'] = \sanitize_text_field($_GET['licenseKey']);
         }
         $templates_response = $this->can_get_templates($parameters);
         if ($templates_response === \false) {

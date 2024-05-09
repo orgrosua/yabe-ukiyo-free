@@ -53,8 +53,8 @@ class Client
      */
     public function verify_nonce()
     {
-        if (!\check_ajax_referer('bricks-nonce', 'nonce', \false)) {
-            \wp_send_json_error('verify_nonce: "bricks-nonce" is invalid.');
+        if (!\check_ajax_referer('bricks-nonce-builder', 'nonce', \false)) {
+            \wp_send_json_error('verify_nonce: "bricks-nonce-builder" is invalid.');
         }
     }
     /**
